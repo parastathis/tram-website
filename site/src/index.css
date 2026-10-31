@@ -1,0 +1,44 @@
+@import "tailwindcss";
+@import "@fontsource-variable/roboto-slab";
+@import "@fontsource/fira-sans/400.css";
+@import "@fontsource/fira-sans/500.css";
+@import "@fontsource/fira-sans/600.css";
+@import "@fontsource-variable/jetbrains-mono";
+
+@theme {
+  --color-tile: #F2EFE9;
+  --color-tile-2: #E9E4DC;
+  --color-ink: #1B1416;
+  --color-ink-2: #4A3C3F;
+  --color-red: #C8262D;
+  --color-red-deep: #9E1B21;
+  --color-green: #1F6A3D;
+  --color-oxblood: #3A0F12;
+  --color-oxblood-2: #2A0A0C;
+  --color-label: #1F5FA8;
+  --font-display: "Roboto Slab Variable", "Roboto Slab", Georgia, serif;
+  --font-body: "Fira Sans", "Commissioner", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono Variable", "JetBrains Mono", ui-monospace, monospace;
+  --ease-expo: cubic-bezier(.22,1,.36,1);
+}
+
+html { scrollbar-gutter: stable; overscroll-behavior: none; }
+html, body { background: var(--color-tile); color: var(--color-ink); }
+body { font-family: var(--font-body); -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; overflow-x: clip; }
+.font-display { font-family: var(--font-display); }
+.font-mono { font-family: var(--font-mono); }
+::selection { background: var(--color-red); color: #fff; }
+
+/* buttons: outline-to-fill wipe + press sink */
+.btn { position: relative; isolation: isolate; display: inline-flex; align-items: center; gap: .6rem; padding: .95rem 1.4rem; border: 1.5px solid currentColor; border-radius: 4px; font-weight: 600; letter-spacing: .01em; overflow: hidden; transition: color .35s var(--ease-expo), transform .18s var(--ease-expo); }
+.btn::before { content: ""; position: absolute; inset: 0; z-index: -1; background: var(--btn-fill, var(--color-red)); transform: translateX(-101%); transition: transform .45s var(--ease-expo); }
+.btn:hover::before, .btn:focus-visible::before { transform: translateX(0); }
+.btn:hover, .btn:focus-visible { color: var(--btn-fill-text, #fff); }
+.btn:active { transform: translateY(2px); }
+.btn-solid { background: var(--color-red); color: #fff; border-color: var(--color-red); }
+.btn-solid::before { background: var(--color-red-deep); }
+.btn-solid:hover { color: #fff; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; scroll-behavior: auto !important; }
+}

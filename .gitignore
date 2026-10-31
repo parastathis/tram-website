@@ -1,0 +1,6 @@
+node_modules
+dist
+assets/drive
+assets/reels/*.mp4
+*.zip
+.DS_Store
