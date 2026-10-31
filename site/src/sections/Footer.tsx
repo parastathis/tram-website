@@ -11,11 +11,11 @@ import { SHOP, isOpenNow } from '@/lib/data'
 export default function Footer() {
   const open = isOpenNow()
   return (
-    <footer className="relative overflow-hidden border-t border-ink/15 bg-tile text-ink">
+    <footer className="relative overflow-hidden border-t border-ink/15 bg-ivory text-ink">
       <div className="mx-auto max-w-[1440px] px-5 pt-16 md:px-8 md:pt-20">
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-[1.2fr_2fr]">
           <div className="flex max-w-sm flex-col gap-5">
-            <a href="#hero" className="flex items-center gap-3 font-display text-xl font-extrabold"><img src="/media/tram-mark.png" alt="" className="h-8 w-auto" />Το Τραμ</a>
+            <a href="#hero" className="flex items-center gap-3 font-display text-2xl uppercase"><img src="/media/tram-mark.png" alt="" className="h-8 w-auto" />Το Τραμ</a>
             <p className="text-sm leading-6 text-ink-2">Παραδοσιακό κρεοπωλείο στον Πειραιά από το 1980. Ελληνικό κρέας με ετικέτα, παρασκευές του εργαστηρίου, παραγγελίες γιορτών.</p>
           </div>
           <nav aria-label="Υποσέλιδο" className="grid grid-cols-2 gap-8 sm:grid-cols-3">
@@ -54,7 +54,7 @@ export default function Footer() {
         </div>
       </div>
       <div aria-hidden className="pointer-events-none select-none px-5 md:px-8">
-        <p className="-mb-[0.2em] bg-gradient-to-b from-ink/15 to-transparent bg-clip-text text-center font-display text-[clamp(5rem,21vw,17rem)] font-extrabold leading-none tracking-tight text-transparent">Το Τραμ</p>
+        <p className="-mb-[0.2em] bg-gradient-to-b from-ink/15 to-transparent bg-clip-text text-center font-display text-[clamp(6rem,26vw,22rem)] uppercase leading-none text-transparent">Το Τραμ</p>
       </div>
     </footer>
   )

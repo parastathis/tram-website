@@ -20,7 +20,7 @@ const Row = memo(({ children, direction = 'left', speed = 40 }: { children: Reac
 ))
 
 const Ticket = ({ r }: { r: (typeof REVIEWS)[number] }) => (
-  <div className="flex h-[200px] w-[340px] shrink-0 flex-col justify-between border-r border-ink/15 bg-tile p-6 transition-colors hover:bg-tile-2">
+  <div className="flex h-[200px] w-[340px] shrink-0 flex-col justify-between border-r border-ink/15 bg-ivory p-6 transition-colors hover:bg-ivory-2">
     <p className="font-mono text-[13px] leading-relaxed">«{r.text}»</p>
     <div className="flex items-center justify-between font-mono text-[12px] text-ink-2">
       <span>{r.name}</span>
@@ -33,9 +33,9 @@ export default function Reviews() {
   const items = useMemo(() => { let a = [...REVIEWS]; while (a.length < 12) a = [...a, ...REVIEWS]; return a }, [])
   const half = Math.ceil(items.length / 2)
   return (
-    <section className="border-y border-ink/15 bg-tile py-20 text-ink md:py-24">
+    <section className="border-y border-ink/15 bg-ivory py-20 text-ink md:py-24">
       <div className="mx-auto max-w-[1440px] px-5 md:px-8">
-        <h2 className="font-display text-[clamp(1.8rem,3.4vw,3rem)] font-extrabold leading-[1.05] tracking-tight">Το λένε οι πελάτες, όχι εμείς.</h2>
+        <h2 className="font-display text-[clamp(3.2rem,8vw,7rem)] uppercase leading-[.9]">Το λένε οι πελάτες, όχι εμείς.</h2>
         <p className="mt-3 text-ink-2">Κριτικές από το Google και το Facebook. 100% προτείνουν τη σελίδα.</p>
       </div>
       <div className="mt-10 flex flex-col gap-px border-y border-ink/15 bg-ink/15">

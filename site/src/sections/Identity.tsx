@@ -1,71 +1,47 @@
 /**
- * Ported from 21st.dev "Scroll 01" by felipemenezes098
- * https://21st.dev/@felipemenezes098/components/scroll-01
- * Kept: sticky media on one side that swaps as the reader scrolls the text items,
- * per-item opacity and y travel, stacked fallback on phones.
- * Changed: the items are the fields of the shop's real traceability label (AU2+), set in mono
- * like the label itself, and the sticky media are the shop's own photos.
+ * Ταυτότητα: the shop's real traceability label, set as a typographic document. Each line reveals
+ * with a block wipe (21st.dev "Text Animation" by ajith66310, block-wipe line reveal, simplified
+ * to CSS clip-path so it needs no SplitText here).
  */
-import { motion, useScroll, useTransform, useMotionValueEvent } from 'motion/react'
-import { useRef, useState, type Dispatch, type SetStateAction } from 'react'
+import { useRef } from 'react'
+import { motion, useInView } from 'motion/react'
 
-const ITEMS = [
-  { k: 'Είδος ζώου', v: 'Βόειο, νεαρό ζώο', text: 'Κάθε μοσχάρι μπαίνει στο μαγαζί με την ετικέτα του. Δεν είναι διακόσμηση, είναι η ταυτότητά του.', media: '/media/label.webp', alt: 'Η ετικέτα ιχνηλασιμότητας πάνω στο κρέας' },
-  { k: 'Χώρα γέννησης · εκτροφής · σφαγής', v: 'Ελλάδα · Ελλάδα · Ελλάδα', text: 'Φάρμα Ελασσόνας. Γεννήθηκε, μεγάλωσε και σφάχτηκε στην Ελλάδα, με αριθμό έγκρισης σφαγείου στην ετικέτα.', media: '/media/farm-box.webp', alt: 'Κιβώτιο από τη Φάρμα Ελασσόνας' },
-  { k: 'Ταξινόμηση', v: 'AU2+', text: 'Κατηγορία διάπλασης και πάχους. Το AU2+ σημαίνει καλοσχηματισμένο σφάγιο με λίγο λίπος: το κρέας που θέλεις για μπριζόλα.', media: '/media/beef-label.webp', alt: 'Μοσχάρι με την ετικέτα AU2+' },
-  { k: 'Κοπή', v: 'Σαλαμίνος 124, την ώρα που το ζητάς', text: 'Από το ψυγείο στον πάγκο και από τον πάγκο στη σακούλα σου. Τίποτα δεν κόβεται από πριν.', media: '/media/beef-block.webp', alt: 'Κομμάτι μοσχάρι πάνω στον ξύλινο πάγκο' },
+const ROWS = [
+  ['Είδος ζώου', 'Βόειο, νεαρό ζώο'],
+  ['Χώρα γέννησης', 'Ελλάδα'],
+  ['Χώρα εκτροφής', 'Ελλάδα'],
+  ['Χώρα σφαγής', 'Ελλάδα'],
+  ['Εκτροφή', 'Φάρμα Ελασσόνας'],
+  ['Ταξινόμηση', 'AU2+'],
+  ['Κοπή', 'Σαλαμίνος 124, Πειραιάς'],
 ]
 
-function Item({ item, index, setActive }: { item: (typeof ITEMS)[number]; index: number; setActive: Dispatch<SetStateAction<number>> }) {
-  const ref = useRef<HTMLDivElement | null>(null)
-  const { scrollYProgress } = useScroll({ target: ref, offset: ['start 90%', 'end 15%'] })
-  const y = useTransform(scrollYProgress, [0, 1], [18, -18])
-  const opacity = useTransform(scrollYProgress, [0, 0.3, 0.7, 1], index === 0 ? [1, 0.75, 1, 0] : [0, 0.75, 1, 0])
-  const isActive = useTransform(scrollYProgress, (v) => v > 0.4 && v < 0.6)
-  useMotionValueEvent(isActive, 'change', (v) => { if (v) setActive((p) => (p === index ? p : index)) })
-  return (
-    <motion.article ref={ref} style={{ opacity, y }} className="label-row">
-      <p className="font-mono text-[12px] text-ink-2">{item.k}</p>
-      <h3 className="mt-2 font-display text-3xl font-extrabold leading-tight md:text-4xl">{item.v}</h3>
-      <p className="mt-4 max-w-[46ch] text-[15px] leading-relaxed text-ink-2">{item.text}</p>
-    </motion.article>
-  )
-}
-
 export default function Identity() {
-  const [active, setActive] = useState(0)
+  const ref = useRef<HTMLDivElement>(null)
+  const show = useInView(ref, { once: true, margin: '-20% 0px -20% 0px' })
   return (
-    <section id="taftotita" className="bg-tile text-ink">
-      <div className="mx-auto max-w-[1440px] px-5 py-24 md:px-8 md:py-32">
-        <div className="max-w-2xl">
-          <h2 className="font-display text-[clamp(2rem,4.2vw,3.8rem)] font-extrabold leading-[1.05] tracking-tight">Κρέας με ονοματεπώνυμο.</h2>
-          <p className="mt-4 text-lg text-ink-2">Η ετικέτα που βλέπεις στη βιτρίνα, γραμμή γραμμή.</p>
+    <section id="taftotita" className="bg-ivory-2 text-ink">
+      <div className="mx-auto grid max-w-[1440px] gap-12 px-5 py-24 md:grid-cols-12 md:px-8 md:py-32">
+        <div className="md:col-span-5">
+          <h2 className="font-display text-[clamp(3.2rem,8vw,7rem)] uppercase leading-[.9]">Κρέας με ονοματεπώνυμο</h2>
+          <p className="mt-5 max-w-[42ch] text-lg text-ink-2">Κάθε μοσχάρι μπαίνει στο μαγαζί με την ετικέτα του: πού γεννήθηκε, πού μεγάλωσε, πού σφάχτηκε, τι κατηγορία είναι. Η ετικέτα μένει πάνω στο κρέας μέχρι να κοπεί.</p>
+          <p className="mt-4 max-w-[42ch] text-base text-ink-2">Το AU2+ σημαίνει καλοσχηματισμένο σφάγιο με λίγο λίπος. Το κρέας που θέλεις για μπριζόλα.</p>
         </div>
-
-        {/* phones */}
-        <div className="mt-12 space-y-12 md:hidden">
-          {ITEMS.map((it) => (
-            <article key={it.k} className="label-row">
-              <div className="aspect-[4/5] w-full overflow-hidden"><img src={it.media} alt={it.alt} className="h-full w-full object-cover" loading="lazy" /></div>
-              <p className="mt-5 font-mono text-[12px] text-ink-2">{it.k}</p>
-              <h3 className="mt-2 font-display text-3xl font-extrabold leading-tight">{it.v}</h3>
-              <p className="mt-3 text-[15px] leading-relaxed text-ink-2">{it.text}</p>
-            </article>
-          ))}
-        </div>
-
-        {/* desktop */}
-        <div className="mt-16 hidden gap-16 md:grid md:grid-cols-[1fr_1fr]">
-          <div className="sticky top-24 h-[72vh] overflow-hidden border-[3px] border-label">
-            {ITEMS.map((it, i) => (
-              <motion.img key={it.k} src={it.media} alt={it.alt} className="absolute inset-0 h-full w-full object-cover" initial={{ opacity: i === 0 ? 1 : 0 }} animate={{ opacity: active === i ? 1 : 0 }} transition={{ duration: 0.2, ease: 'linear' }} />
-            ))}
-            <div className="absolute left-4 top-4 bg-label px-3 py-1 font-mono text-[12px] font-semibold text-tile">Ελληνικό βόειο · νεαρό ζώο</div>
-          </div>
-          <div className="py-[30vh]">
-            <div className="space-y-[28vh]">
-              {ITEMS.map((it, i) => <Item key={it.k} item={it} index={i} setActive={setActive} />)}
+        <div ref={ref} className="md:col-span-6 md:col-start-7">
+          <div className="border-[3px] border-label bg-ivory p-6 md:p-8">
+            <div className="flex items-center justify-between border-b-2 border-label pb-3 font-mono text-[12px] font-semibold text-label">
+              <span>Ελληνικό βόειο · νεαρό ζώο</span><span>GR</span>
             </div>
+            <dl className="mt-4">
+              {ROWS.map(([k, v], i) => (
+                <div key={k} className="relative grid grid-cols-[1fr_1.4fr] gap-4 border-b border-ink/15 py-3 font-mono text-[14px]">
+                  <motion.div aria-hidden className="absolute inset-0 bg-label" initial={{ scaleX: 0 }} animate={show ? { scaleX: [0, 1, 1, 0] } : { scaleX: 0 }} transition={{ duration: 1.2, times: [0, 0.4, 0.55, 1], delay: i * 0.09, ease: [0.76, 0, 0.24, 1] }} style={{ transformOrigin: show ? 'left' : 'right' }} />
+                  <motion.dt className="relative" initial={{ opacity: 0 }} animate={show ? { opacity: 1 } : {}} transition={{ delay: i * 0.09 + 0.5, duration: 0.01 }}>{k}</motion.dt>
+                  <motion.dd className="relative font-semibold" initial={{ opacity: 0 }} animate={show ? { opacity: 1 } : {}} transition={{ delay: i * 0.09 + 0.5, duration: 0.01 }}>{v}</motion.dd>
+                </div>
+              ))}
+            </dl>
+            <motion.div className="mt-5 inline-block border-2 border-green px-3 py-1 font-display text-xl uppercase text-green" initial={{ opacity: 0, rotate: -6, scale: 1.3 }} animate={show ? { opacity: 1, rotate: -3, scale: 1 } : {}} transition={{ delay: 1.3, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}>Κόπηκε σήμερα</motion.div>
           </div>
         </div>
       </div>

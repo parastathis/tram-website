@@ -11,6 +11,9 @@ for (const [name, w, h] of [['desk', 1440, 900], ['phone', 390, 844]]) {
   page.on('console', (m) => m.type() === 'error' && errors.push(m.text()))
   page.on('pageerror', (e) => errors.push(String(e)))
   await page.goto(url, { waitUntil: 'networkidle' })
+  await page.waitForTimeout(2800)
+  const enter = page.getByRole('button', { name: /Μπες/ })
+  if (await enter.count()) { await enter.first().click({ force: true }); await page.waitForTimeout(1400) }
   await page.waitForTimeout(1800)
   await page.screenshot({ path: `${out}/${name}-fold.png` })
   const total = await page.evaluate(() => document.documentElement.scrollHeight)

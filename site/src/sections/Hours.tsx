@@ -28,12 +28,12 @@ function Clock({ now }: { now: Date }) {
   const hand = (deg: number, len: number, w: number, color: string) =>
     ({ left: '50%', top: '50%', width: w, height: `${len}%`, background: color, transform: `translate(-50%, -100%) rotate(${deg}deg)`, transformOrigin: '50% 100%' }) as React.CSSProperties
   return (
-    <div className="relative mx-auto aspect-square w-full max-w-[420px] [border-radius:50%] border border-ink/15 bg-tile shadow-[0_30px_60px_-30px_rgba(27,20,22,.35)]">
+    <div className="relative mx-auto aspect-square w-full max-w-[420px] [border-radius:50%] border border-ink/15 bg-ivory shadow-[0_30px_60px_-30px_rgba(27,20,22,.35)]">
       <img src="/media/logo-ink.png" alt="Το ρολόι του μαγαζιού με το λογότυπο Το Τραμ, παράδοση από το 1980" className="absolute inset-[6%] h-[88%] w-[88%] object-contain" loading="lazy" />
       <div aria-hidden className="absolute rounded-sm" style={hand(h * 30, 24, 7, '#C8262D')} />
       <div aria-hidden className="absolute rounded-sm" style={hand(m * 6, 36, 5, '#C8262D')} />
       <div aria-hidden className="absolute" style={hand(s * 6, 40, 1.5, '#1B1416')} />
-      <div aria-hidden className="absolute left-1/2 top-1/2 h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 [border-radius:50%] bg-red ring-2 ring-tile" />
+      <div aria-hidden className="absolute left-1/2 top-1/2 h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 [border-radius:50%] bg-red ring-2 ring-ivory" />
     </div>
   )
 }
@@ -81,7 +81,7 @@ function Map() {
         my.set(0)
       }}
     >
-      <motion.div ref={ref} style={{ rotateX: rx, rotateY: ry, transformStyle: 'preserve-3d' }} className="relative aspect-[4/3] w-full overflow-hidden border border-ink/20 bg-tile-2">
+      <motion.div ref={ref} style={{ rotateX: rx, rotateY: ry, transformStyle: 'preserve-3d' }} className="relative aspect-[4/3] w-full overflow-hidden border border-ink/20 bg-ivory-2">
         <div className="absolute left-1/2 top-1/2 h-[768px] w-[768px]" style={{ transform: `translate(calc(-50% + ${128 - tiles.fx}px), calc(-50% + ${128 - tiles.fy}px))` }}>
           {tiles.list.map((t, i) => (
             <img key={i} src={t.url} alt="" className="absolute h-64 w-64 select-none" style={{ left: (t.dx + 1) * 256, top: (t.dy + 1) * 256 }} loading="lazy" draggable={false} />
@@ -90,13 +90,13 @@ function Map() {
         <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-full">
           <MapPin size={44} weight="fill" className="text-red drop-shadow-[0_6px_10px_rgba(27,20,22,.35)]" />
         </div>
-        <div className="absolute inset-x-0 bottom-0 flex items-center justify-between bg-tile/95 px-4 py-3 text-sm">
+        <div className="absolute inset-x-0 bottom-0 flex items-center justify-between bg-ivory/95 px-4 py-3 text-sm">
           <span className="font-medium">{SHOP.address}, Κοπή</span>
           <span className="inline-flex items-center gap-1 font-mono text-[12px]">
             Οδηγίες <ArrowUpRight size={14} weight="bold" />
           </span>
         </div>
-        <span className="absolute right-1 top-1 bg-tile/80 px-1 font-mono text-[9px] text-ink-2">© OpenStreetMap</span>
+        <span className="absolute right-1 top-1 bg-ivory/80 px-1 font-mono text-[9px] text-ink-2">© OpenStreetMap</span>
       </motion.div>
     </a>
   )
@@ -107,7 +107,7 @@ export default function Hours() {
   const open = isOpenNow(now)
   const today = now.getDay()
   return (
-    <section id="ores" className="bg-tile text-ink">
+    <section id="ores" className="bg-ivory text-ink">
       <div className="mx-auto max-w-[1440px] px-5 py-24 md:px-8 md:py-32">
         <div className="grid gap-12 md:grid-cols-12 md:gap-8">
           <div className="md:col-span-4">
@@ -118,7 +118,7 @@ export default function Hours() {
             </p>
           </div>
           <div className="md:col-span-4">
-            <h2 className="font-display text-[clamp(2rem,4.2vw,3.8rem)] font-extrabold leading-[1.05] tracking-tight">Ώρες.</h2>
+            <h2 className="font-display text-[clamp(3.2rem,8vw,7rem)] uppercase leading-[.9]">Ώρες.</h2>
             <table className="mt-8 w-full border-t border-ink/15 text-[15px]">
               <tbody>
                 {[1, 2, 3, 4, 5, 6, 0].map((d) => (
@@ -141,7 +141,7 @@ export default function Hours() {
             </div>
           </div>
           <div className="md:col-span-4">
-            <h2 className="font-display text-[clamp(2rem,4.2vw,3.8rem)] font-extrabold leading-[1.05] tracking-tight">Πού.</h2>
+            <h2 className="font-display text-[clamp(3.2rem,8vw,7rem)] uppercase leading-[.9]">Πού.</h2>
             <p className="mt-4 text-[15px] text-ink-2">{SHOP.address}, {SHOP.area}. Στη γωνία Σπάρτης και Σαλαμίνος.</p>
             <div className="mt-6"><Map /></div>
           </div>

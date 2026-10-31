@@ -7,7 +7,8 @@
  */
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion, useAnimationControls, useReducedMotion } from 'motion/react'
-import { Minus, Plus, WhatsappLogo, Phone } from '@phosphor-icons/react'
+import { Minus, Plus } from '@phosphor-icons/react'
+import Btn from '@/components/Btn'
 import { SHOP, STOPS } from '@/lib/data'
 import { cn } from '@/lib/cn'
 
@@ -66,11 +67,11 @@ export default function Order() {
   const wa = `${SHOP.whatsapp}?text=${encodeURIComponent(msg)}`
 
   return (
-    <section id="paraggelia" className="bg-tile-2 text-ink">
+    <section id="paraggelia" className="bg-ivory-2 text-ink">
       <div className="mx-auto max-w-[1440px] px-5 py-24 md:px-8 md:py-32">
         <div className="grid gap-12 md:grid-cols-[1fr_1fr] md:gap-20">
           <div>
-            <h2 className="font-display text-[clamp(2rem,4.2vw,3.8rem)] font-extrabold leading-[1.05] tracking-tight">Παραγγελία για παραλαβή.</h2>
+            <h2 className="font-display text-[clamp(3.2rem,8vw,7rem)] uppercase leading-[.9]">Παραγγελία για παραλαβή.</h2>
             <p className="mt-4 max-w-[44ch] text-lg text-ink-2">Για το τραπέζι της Κυριακής, το Πάσχα ή τα Χριστούγεννα. Γράψε τι θέλεις και πότε περνάς, και το έχουμε έτοιμο.</p>
             <ul className="mt-8 space-y-2 text-[15px] text-ink-2">
               <li>Παραλαβή από το κατάστημα, Σπάρτης & Σαλαμίνος 124.</li>
@@ -79,12 +80,12 @@ export default function Order() {
             </ul>
           </div>
 
-          <form className="order-sheet border border-ink/20 bg-tile p-6 md:p-8" onSubmit={(e) => { e.preventDefault(); window.open(wa, '_blank', 'noopener') }}>
+          <form className="order-sheet border border-ink/20 bg-ivory p-6 md:p-8" onSubmit={(e) => { e.preventDefault(); window.open(wa, '_blank', 'noopener') }}>
             <fieldset>
               <legend className="font-mono text-[12px] text-ink-2">Είδος</legend>
               <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
                 {KINDS.map((k) => (
-                  <label key={k} className={cn('cursor-pointer border px-3 py-3 text-center text-sm font-medium transition-colors', kind === k ? 'border-red bg-red text-tile' : 'border-ink/25 hover:border-ink')}>
+                  <label key={k} className={cn('cursor-pointer border px-3 py-3 text-center text-sm font-medium transition-colors', kind === k ? 'border-red bg-red text-ivory' : 'border-ink/25 hover:border-ink')}>
                     <input type="radio" name="kind" value={k} checked={kind === k} onChange={() => setKind(k)} className="sr-only" />{k}
                   </label>
                 ))}
@@ -97,20 +98,20 @@ export default function Order() {
               </div>
               <label className="flex-1 min-w-[160px]">
                 <span className="font-mono text-[12px] text-ink-2">Παραλαβή</span>
-                <input type="text" value={day} onChange={(e) => setDay(e.target.value)} placeholder="π.χ. Σάββατο πρωί" className="mt-3 h-11 w-full border border-ink/25 bg-tile px-3 text-sm focus:border-ink focus:outline-none" />
+                <input type="text" value={day} onChange={(e) => setDay(e.target.value)} placeholder="π.χ. Σάββατο πρωί" className="mt-3 h-11 w-full border border-ink/25 bg-ivory px-3 text-sm focus:border-ink focus:outline-none" />
               </label>
             </div>
             <label className="mt-6 block">
               <span className="font-mono text-[12px] text-ink-2">Όνομα</span>
-              <input type="text" value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" className="mt-3 h-11 w-full border border-ink/25 bg-tile px-3 text-sm focus:border-ink focus:outline-none" />
+              <input type="text" value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" className="mt-3 h-11 w-full border border-ink/25 bg-ivory px-3 text-sm focus:border-ink focus:outline-none" />
             </label>
             <label className="mt-6 block">
               <span className="font-mono text-[12px] text-ink-2">Σημείωση</span>
-              <textarea value={note} onChange={(e) => setNote(e.target.value)} rows={2} placeholder="κομμένο για σούβλα, χωρίς κόκαλο..." className="mt-3 w-full border border-ink/25 bg-tile px-3 py-2 text-sm focus:border-ink focus:outline-none" />
+              <textarea value={note} onChange={(e) => setNote(e.target.value)} rows={2} placeholder="κομμένο για σούβλα, χωρίς κόκαλο..." className="mt-3 w-full border border-ink/25 bg-ivory px-3 py-2 text-sm focus:border-ink focus:outline-none" />
             </label>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <button type="submit" className="btn btn-solid justify-center"><WhatsappLogo size={20} weight="bold" /> Στείλε στο WhatsApp</button>
-              <a href={SHOP.phoneHref} className="btn justify-center"><Phone size={18} weight="bold" /> Ή πάρε τηλέφωνο</a>
+              <Btn type="submit">Στείλε στο WhatsApp</Btn>
+              <Btn href={SHOP.phoneHref} variant="ghost">Πάρε τηλέφωνο</Btn>
             </div>
             <p className="mt-4 font-mono text-[11px] text-ink-2">Ανοίγει το WhatsApp με έτοιμο μήνυμα προς το {SHOP.mobile}. Δεν αποθηκεύουμε τίποτα.</p>
           </form>
