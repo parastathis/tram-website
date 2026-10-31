@@ -38,6 +38,7 @@ export default function Hero() {
   const halfB = useRef<HTMLDivElement>(null)
   const halfImgs = useRef<(HTMLImageElement | null)[]>([])
   const stripsWrap = useRef<HTMLDivElement>(null)
+  const shade = useRef<HTMLDivElement>(null)
   const [phone] = useState(() => typeof window !== 'undefined' && window.matchMedia('(max-width: 767px)').matches)
   const [reduced] = useState(() => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches)
 
@@ -84,6 +85,7 @@ export default function Hero() {
       tl.to(halfA.current, { xPercent: -16, yPercent: -40, ease: 'power3.in', duration: 1 - LAND }, LAND)
       tl.to(halfB.current, { xPercent: 16, yPercent: 40, ease: 'power3.in', duration: 1 - LAND }, LAND)
       tl.to(stage.current, { backgroundColor: '#EFEAE0', ease: 'none', duration: 1 - LAND }, LAND)
+      tl.to(shade.current, { opacity: 0, ease: 'none', duration: 0.1 }, LAND)
     }, section)
     return () => ctx.revert()
   }, [phone, reduced])
@@ -122,7 +124,7 @@ export default function Hero() {
             </div>
           </>
         )}
-        <div aria-hidden className="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink/70 via-transparent to-ink/30" />
+        <div ref={shade} aria-hidden className="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink/70 via-transparent to-ink/30" />
 
         <div className="absolute inset-x-5 bottom-8 z-10 md:inset-x-8 md:bottom-10">
           <h1 ref={title} className="font-display text-[26vw] uppercase leading-[.82] md:text-[17vw]">Το Τραμ</h1>
