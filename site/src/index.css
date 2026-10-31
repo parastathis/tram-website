@@ -42,3 +42,11 @@ body { font-family: var(--font-body); -webkit-font-smoothing: antialiased; text-
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; scroll-behavior: auto !important; }
 }
+
+.nav-link::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 2px; background: currentColor; transform: scaleX(0); transform-origin: right; transition: transform .45s var(--ease-expo); }
+.nav-link:hover::after, .nav-link.is-active::after { transform: scaleX(1); transform-origin: left; }
+
+@keyframes marquee-left { from { transform: translate3d(0,0,0) } to { transform: translate3d(-100%,0,0) } }
+@keyframes marquee-right { from { transform: translate3d(-100%,0,0) } to { transform: translate3d(0,0,0) } }
+.animate-marquee-left { animation: marquee-left var(--duration) linear infinite; }
+.animate-marquee-right { animation: marquee-right var(--duration) linear infinite; }
