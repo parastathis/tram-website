@@ -28,12 +28,12 @@ function Clock({ now }: { now: Date }) {
   const hand = (deg: number, len: number, w: number, color: string) =>
     ({ left: '50%', top: '50%', width: w, height: `${len}%`, background: color, transform: `translate(-50%, -100%) rotate(${deg}deg)`, transformOrigin: '50% 100%' }) as React.CSSProperties
   return (
-    <div className="relative mx-auto aspect-square w-full max-w-[420px] rounded-full border border-ink/15 bg-tile shadow-[0_30px_60px_-30px_rgba(27,20,22,.35)]">
+    <div className="relative mx-auto aspect-square w-full max-w-[420px] [border-radius:50%] border border-ink/15 bg-tile shadow-[0_30px_60px_-30px_rgba(27,20,22,.35)]">
       <img src="/media/logo-ink.png" alt="Το ρολόι του μαγαζιού με το λογότυπο Το Τραμ, παράδοση από το 1980" className="absolute inset-[6%] h-[88%] w-[88%] object-contain" loading="lazy" />
       <div aria-hidden className="absolute rounded-sm" style={hand(h * 30, 24, 7, '#C8262D')} />
       <div aria-hidden className="absolute rounded-sm" style={hand(m * 6, 36, 5, '#C8262D')} />
       <div aria-hidden className="absolute" style={hand(s * 6, 40, 1.5, '#1B1416')} />
-      <div aria-hidden className="absolute left-1/2 top-1/2 h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-red ring-2 ring-tile" />
+      <div aria-hidden className="absolute left-1/2 top-1/2 h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 [border-radius:50%] bg-red ring-2 ring-tile" />
     </div>
   )
 }
@@ -113,7 +113,7 @@ export default function Hours() {
           <div className="md:col-span-4">
             <Clock now={now} />
             <p className={cn('mt-8 inline-flex items-center gap-2 border px-3 py-2 font-mono text-[12px]', open ? 'border-green text-green' : 'border-ink/30 text-ink-2')}>
-              <span className={cn('h-2 w-2 rounded-full', open ? 'bg-green' : 'bg-ink/40')} />
+              <span className={cn('h-2 w-2', open ? 'bg-green' : 'bg-ink/40')} />
               {open ? 'Ανοιχτά τώρα' : 'Κλειστά τώρα'}
             </p>
           </div>
@@ -127,7 +127,7 @@ export default function Hours() {
                       {DAYS[d]}
                       {d === today && <span className="ml-2 font-mono text-[11px] text-red">σήμερα</span>}
                     </th>
-                    <td className="py-3 text-right font-mono text-[13px]">{HOURS[d].length ? HOURS[d].map((r) => r.join('–')).join(' · ') : 'Κλειστά'}</td>
+                    <td className="py-3 text-right font-mono text-[13px]">{HOURS[d].length ? HOURS[d].map((r) => r.join(' - ')).join(' · ') : 'Κλειστά'}</td>
                   </tr>
                 ))}
               </tbody>

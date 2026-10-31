@@ -48,7 +48,7 @@ export default function Footer() {
         <div className="mt-16 flex flex-col-reverse items-start justify-between gap-6 border-t border-ink/15 py-8 sm:flex-row sm:items-center">
           <div className="flex flex-col gap-3 text-sm text-ink-2 sm:flex-row sm:items-center sm:gap-6">
             <span>© {new Date().getFullYear()} {SHOP.full}</span>
-            <span className="inline-flex items-center gap-2"><span className={`h-2 w-2 rounded-full ${open ? 'bg-green' : 'bg-ink/40'}`} />{open ? 'Ανοιχτά τώρα' : 'Κλειστά τώρα'}</span>
+            <span className="inline-flex items-center gap-2"><span className={`h-2 w-2 ${open ? 'bg-green' : 'bg-ink/40'}`} />{open ? 'Ανοιχτά τώρα' : 'Κλειστά τώρα'}</span>
           </div>
           <span className="text-sm text-ink-2">Σχεδιασμός: <a href="https://stathisparas.com" className="hover:text-ink" target="_blank" rel="noopener">Στάθης Παρασκευόπουλος</a></span>
         </div>

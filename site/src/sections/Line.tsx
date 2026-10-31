@@ -156,7 +156,7 @@ export default function Line() {
             </div>
             {STOPS.map((s, i) => (
               <article key={s.id} className="stop-card relative">
-                <span className="absolute -left-10 top-1 h-3 w-3 translate-x-[2px] rounded-full bg-tile" />
+                <span className="absolute -left-10 top-1 h-3 w-3 translate-x-[2px] bg-tile" />
                 <div className="aspect-[4/5] w-full overflow-hidden">
                   <img src={s.image} alt={s.alt} className="h-full w-full object-cover" loading="lazy" />
                 </div>
