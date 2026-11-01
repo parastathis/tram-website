@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { initSmooth } from '@/lib/smooth'
 import Nav from '@/components/Nav'
 import Preloader from '@/components/Preloader'
+import MobileBar from '@/components/MobileBar'
 import Hero from '@/sections/Hero'
 import Chapters from '@/sections/Chapters'
 import Cuts from '@/sections/Cuts'
@@ -40,6 +41,7 @@ export default function App() {
         <Hours />
       </main>
       <Footer />
+      <MobileBar />
     </>
   )
 }
