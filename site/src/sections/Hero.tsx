@@ -3,10 +3,11 @@
  * entry and held on the landed blade. Entry: twelve ink strips wipe off the film (strip mechanics
  * from 21st.dev "Parallax Strip Slider" by hyperiux,
  * https://21st.dev/@hyperiux/components/parallax-strip-slider). Then scroll drives the rest: the
- * last frame is cut on the cleaver's diagonal and the halves slide away; out of the gap the shop's
- * tram (generated head-on, Nano Banana) grows towards you until it fills the screen; its headlamp
- * burns through and the page opens out of the lamp onto the first chapter. Reduced motion: the
- * still and the title, no film and no ride.
+ * last frame is cut on the cleaver's diagonal and the halves slide away; out of the gap comes the
+ * shop's tram (generated film, Veo 3.1 from the head-on Nano Banana picture, scrubbed frame by
+ * frame so it follows the hand), it drives straight at you until its headlamp fills the screen,
+ * crashes into the glass (shake and flash), and behind the flash stands the hub: four doors into
+ * the site, the way a chain lets you pick a store. Reduced motion: the still, the title, the hub.
  */
 import { useEffect, useRef, useState } from 'react'
 import gsap from 'gsap'
@@ -14,23 +15,29 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import Btn from '@/components/Btn'
 import { SHOP } from '@/lib/data'
 import { getLenis } from '@/lib/smooth'
+import { cn } from '@/lib/cn'
 
 gsap.registerPlugin(ScrollTrigger)
 
 const STRIPS = 12
 const LAST = '/media/frames/f_0095.webp'
-const TRAM = '/media/gen/tram-front.webp'
-const TRAM_W = 896, TRAM_H = 1200
-const LAMP = { x: 0.501, y: 0.602 } // the headlamp inside the tram picture
+const TFRAMES = 95
+const tframe = (i: number) => `/media/tram-frames/t_${String(i + 1).padStart(4, '0')}.webp`
 const CUT = 14
 const tcut = Math.tan((CUT * Math.PI) / 180) * 50
 const CLIP_A = `polygon(0 0, 100% 0, 100% ${50 - tcut + 0.4}%, 0 ${50 + tcut + 0.4}%)`
 const CLIP_B = `polygon(0 ${50 + tcut}%, 100% ${50 - tcut}%, 100% 100%, 0 100%)`
 
+const DOORS = [
+  { n: '01', label: 'Τα κρέατα', sub: 'Μοσχάρι, αρνί, χοιρινό, λουκάνικα', href: '#kreata', src: '/media/gen/ribs.webp' },
+  { n: '02', label: 'Το μαγαζί', sub: 'Σπάρτης & Σαλαμίνος, από το 1980', href: '#magazi', src: '/media/gen/shop-front.webp' },
+  { n: '03', label: 'Ο Ιπποκράτης', sub: 'Κόβει μπροστά σου', href: '#ippokratis', src: '/media/gen/ippokratis-studio-wide.webp' },
+  { n: '04', label: 'Παραγγελία', sub: 'Τηλέφωνο ή WhatsApp, έτοιμο στην ώρα του', href: '#paraggelia', src: '/media/gen/case.webp' },
+]
+
 export default function Hero() {
   const section = useRef<HTMLElement>(null)
   const stage = useRef<HTMLDivElement>(null)
-  const cover = useRef<HTMLDivElement>(null)
   const video = useRef<HTMLVideoElement>(null)
   const strips = useRef<(HTMLDivElement | null)[]>([])
   const title = useRef<HTMLHeadingElement>(null)
@@ -42,11 +49,23 @@ export default function Hero() {
   const halfB = useRef<HTMLDivElement>(null)
   const shade = useRef<HTMLDivElement>(null)
   const tram = useRef<HTMLImageElement>(null)
-  const glow = useRef<HTMLDivElement>(null)
-  const peek = useRef<HTMLDivElement>(null)
-  const peekImg = useRef<HTMLImageElement>(null)
+  const flash = useRef<HTMLDivElement>(null)
+  const hub = useRef<HTMLDivElement>(null)
+  const doors = useRef<(HTMLAnchorElement | null)[]>([])
+  const hubHead = useRef<HTMLDivElement>(null)
   const hint = useRef<HTMLDivElement>(null)
   const [reduced] = useState(() => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches)
+
+  // preload the tram frames in the background
+  useEffect(() => {
+    if (reduced) return
+    let i = 0
+    const load = () => {
+      for (let k = 0; k < 8 && i < TFRAMES; k++, i++) { const im = new Image(); im.src = tframe(i) }
+      if (i < TFRAMES) setTimeout(load, 60)
+    }
+    load()
+  }, [reduced])
 
   // entry: strips off the film, the film plays through once and holds the landed blade
   useEffect(() => {
@@ -67,98 +86,116 @@ export default function Hero() {
     return () => ctx.revert()
   }, [reduced])
 
-  // scroll: the cut, the tram rising out of it, the page opening out of the headlamp
+  // scroll: the cut, the tram ride, the crash, the hub
   useEffect(() => {
     if (reduced) return
     const ctx = gsap.context(() => {
-      const vw = () => stage.current?.offsetWidth ?? 1440
-      const vh = () => stage.current?.offsetHeight ?? 900
-      // tram picture box is 100svh tall; it is shifted so the lamp sits at the stage centre
-      const boxW = () => (vh() * TRAM_W) / TRAM_H
-      const full = () => Math.max(vw() / boxW(), 1) * 1.12 // covers the width, bumper to roof off-screen
-      const setHole = (r: number) => { cover.current?.style.setProperty('--hole', `${r}px`) }
-      setHole(0)
-      const tl = gsap.timeline({ scrollTrigger: { trigger: section.current, start: 'top top', end: 'bottom bottom', scrub: 0.5, invalidateOnRefresh: true } })
-      tl.to(copy.current, { opacity: 0, ease: 'none', duration: 0.1 }, 0)
-      tl.to(hint.current, { opacity: 0, ease: 'none', duration: 0.05 }, 0)
-      tl.set([halfA.current, halfB.current], { autoAlpha: 1 }, 0.06)
-      tl.set(video.current, { autoAlpha: 0 }, 0.06)
-      tl.to(shade.current, { opacity: 0, ease: 'none', duration: 0.1 }, 0.06)
-      tl.to(halfA.current, { xPercent: -22, yPercent: -75, ease: 'power2.in', duration: 0.34 }, 0.06)
-      tl.to(halfB.current, { xPercent: 22, yPercent: 75, ease: 'power2.in', duration: 0.34 }, 0.06)
-      tl.fromTo(tram.current, { xPercent: -50, scale: 0.04, autoAlpha: 0 }, { xPercent: -50, autoAlpha: 1, ease: 'none', duration: 0.06 }, 0.1)
-      tl.fromTo(tram.current, { xPercent: -50, scale: 0.04 }, { xPercent: -50, scale: () => full(), ease: 'power2.in', duration: 0.5 }, 0.1)
-      tl.to(tram.current, { scale: () => full() * 2.4, ease: 'power2.in', duration: 0.3 }, 0.6)
-      tl.fromTo(glow.current, { opacity: 0, scale: 0.4 }, { opacity: 1, scale: 1.6, ease: 'power2.in', duration: 0.3 }, 0.58)
-      tl.fromTo({ r: 0 }, { r: 0 }, { r: () => Math.hypot(vw(), vh()) * 0.62, ease: 'power2.in', duration: 0.26, onUpdate() { setHole(this.targets()[0].r) } }, 0.68)
-      tl.fromTo(peekImg.current, { scale: 1.25 }, { scale: 1, ease: 'none', duration: 0.4 }, 0.6)
-      tl.to(peek.current, { autoAlpha: 1, ease: 'none', duration: 0.01 }, 0.6)
-      tl.to(cover.current, { autoAlpha: 0, ease: 'none', duration: 0.04 }, 0.95)
+      let last = -1
+      const draw = (p: number) => {
+        const idx = Math.min(TFRAMES - 1, Math.max(0, Math.floor(p * (TFRAMES - 1))))
+        if (idx === last) return
+        last = idx
+        if (tram.current) tram.current.src = tframe(idx)
+      }
+      const ride = { p: 0 }
+      const tl = gsap.timeline({ scrollTrigger: { trigger: section.current, start: 'top top', end: 'bottom bottom', scrub: 0.35, invalidateOnRefresh: true } })
+      tl.to(copy.current, { opacity: 0, ease: 'none', duration: 0.08 }, 0)
+      tl.to(hint.current, { opacity: 0, ease: 'none', duration: 0.04 }, 0)
+      tl.set([halfA.current, halfB.current], { autoAlpha: 1 }, 0.04)
+      tl.set(video.current, { autoAlpha: 0 }, 0.04)
+      tl.set(tram.current, { autoAlpha: 1 }, 0.04)
+      tl.to(shade.current, { opacity: 0, ease: 'none', duration: 0.1 }, 0.04)
+      tl.to(halfA.current, { xPercent: -24, yPercent: -80, ease: 'power2.in', duration: 0.3 }, 0.04)
+      tl.to(halfB.current, { xPercent: 24, yPercent: 80, ease: 'power2.in', duration: 0.3 }, 0.04)
+      // the ride: frame by frame, with the hand
+      tl.to(ride, { p: 1, ease: 'none', duration: 0.56, onUpdate: () => draw(ride.p) }, 0.06)
+      // the crash: shake and flash
+      tl.to(stage.current, { x: 0, y: 0, duration: 0.08, ease: 'none', onUpdate() { const k = 1 - Math.abs(this.progress() - 0.5) * 2; gsap.set(stage.current, { x: (Math.random() - 0.5) * 22 * k, y: (Math.random() - 0.5) * 16 * k }) }, onComplete: () => gsap.set(stage.current, { x: 0, y: 0 }) }, 0.6)
+      tl.fromTo(flash.current, { opacity: 0 }, { opacity: 1, ease: 'power3.in', duration: 0.06 }, 0.58)
+      tl.set(tram.current, { autoAlpha: 0 }, 0.64)
+      // the hub rises behind the flash
+      tl.set(hub.current, { autoAlpha: 1 }, 0.62)
+      tl.fromTo(doors.current.filter(Boolean), { yPercent: 100 }, { yPercent: 0, ease: 'power3.out', duration: 0.22, stagger: 0.035 }, 0.64)
+      tl.to(flash.current, { opacity: 0, ease: 'power2.out', duration: 0.18 }, 0.66)
+      tl.fromTo(hubHead.current, { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.14 }, 0.78)
     }, section)
     return () => ctx.revert()
   }, [reduced])
 
-  const go = (e: React.MouseEvent) => {
+  const go = (href: string) => (e: React.MouseEvent) => {
     e.preventDefault()
-    const el = document.getElementById('paraggelia')
+    const el = document.querySelector<HTMLElement>(href)
     const l = getLenis()
     if (el) l ? l.scrollTo(el, { duration: 1.6 }) : el.scrollIntoView({ behavior: 'smooth' })
   }
   const w = 100 / STRIPS
 
   return (
-    <section ref={section} id="hero" data-theme="dark" className="relative w-full" style={{ height: reduced ? '100svh' : '420vh' }} aria-label="Παραδοσιακό Κρεοπωλείο Το Τραμ, Πειραιάς">
-      <div ref={stage} className="sticky top-0 h-[100svh] w-full overflow-hidden bg-ink text-ivory">
-        {/* what the headlamp opens onto: the first chapter */}
-        {!reduced && (
-          <div ref={peek} className="absolute inset-0 invisible">
-            <img ref={peekImg} src="/media/gen/ribs.webp" alt="" className="absolute inset-0 h-full w-full object-cover" />
-            <div className="absolute inset-0 bg-gradient-to-t from-ink/80 via-transparent to-ink/20" />
-            <div className="absolute inset-x-5 bottom-10 md:inset-x-8">
-              <p className="font-mono text-[12px] text-ivory/80">01 · Τα κρέατα</p>
-              <p className="mt-2 font-display text-[clamp(3rem,9vw,8rem)] uppercase leading-[.85]">Μοσχάρι</p>
+    <section ref={section} id="hero" data-theme="dark" className="relative w-full" style={{ height: reduced ? 'auto' : '340vh' }} aria-label="Παραδοσιακό Κρεοπωλείο Το Τραμ, Πειραιάς">
+      <div ref={stage} className={cn('top-0 w-full overflow-hidden bg-ink text-ivory', reduced ? 'relative' : 'sticky h-[100svh]')}>
+        {reduced ? (
+          <div className="relative h-[70svh]">
+            <img src={LAST} alt="" className="absolute inset-0 h-full w-full object-cover opacity-70" />
+            <div className="absolute inset-x-5 bottom-8 md:inset-x-8">
+              <h1 className="font-display text-[22vw] uppercase leading-[.82] md:text-[13vw]">Το Τραμ</h1>
             </div>
           </div>
+        ) : (
+          <>
+            <video ref={video} className="absolute inset-0 h-full w-full object-cover" src="/media/cleaver.mp4" poster="/media/cleaver-poster.jpg" muted playsInline preload="auto" />
+            <div className="pointer-events-none absolute inset-0">
+              {Array.from({ length: STRIPS }, (_, i) => (
+                <div key={i} ref={(el) => { strips.current[i] = el }} className="absolute inset-y-0 bg-ink" style={{ left: `${i * w}%`, width: `${w + 0.1}%`, clipPath: 'inset(0 0 0 0)' }} />
+              ))}
+            </div>
+            {/* the tram ride, under the halves */}
+            <img ref={tram} src={tframe(0)} alt="Το τραμ της γραμμής 41 έρχεται καταπάνω σου" className="absolute inset-0 h-full w-full object-cover opacity-0" draggable={false} />
+            <div ref={halfA} className="absolute inset-0 will-change-transform" style={{ clipPath: CLIP_A, visibility: 'hidden' }}>
+              <img src={LAST} alt="" className="absolute inset-0 h-full w-full object-cover" />
+            </div>
+            <div ref={halfB} className="absolute inset-0 will-change-transform" style={{ clipPath: CLIP_B, visibility: 'hidden' }}>
+              <img src={LAST} alt="" className="absolute inset-0 h-full w-full object-cover" />
+            </div>
+            <div ref={shade} aria-hidden className="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink/70 via-transparent to-ink/30" />
+
+            <div ref={copy} className="absolute inset-x-5 bottom-8 z-10 md:inset-x-8 md:bottom-10">
+              <h1 ref={title} className="font-display text-[26vw] uppercase leading-[.82] md:text-[17vw]">Το Τραμ</h1>
+              <div ref={line} className="mt-2 h-[3px] w-full origin-left bg-red" />
+              <div className="mt-5 flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
+                <p ref={sub} className="max-w-[34ch] text-lg leading-snug text-ivory/90 md:text-xl">Παραδοσιακό κρεοπωλείο στον Πειραιά από το 1980. Κόβουμε μπροστά σου, την ώρα που το ζητάς.</p>
+                <div ref={cta} className="flex flex-col gap-3 sm:flex-row">
+                  <Btn href="#paraggelia" onClick={go('#paraggelia')}>Παραγγελία</Btn>
+                  <Btn href={SHOP.phoneHref} variant="ivory">{SHOP.phone}</Btn>
+                </div>
+              </div>
+            </div>
+            <div ref={hint} className="pointer-events-none absolute right-5 top-24 z-10 font-mono text-[11px] uppercase tracking-[.2em] text-ivory/70 opacity-0 md:right-8">Κύλησε για την κοπή</div>
+          </>
         )}
 
-        {/* the cover: film, cut, tram; a hole opens in it from the headlamp */}
-        <div ref={cover} className="absolute inset-0 bg-ink" style={{ ['--hole' as string]: '0px', WebkitMaskImage: 'radial-gradient(circle at 50% 50%, transparent var(--hole), #000 calc(var(--hole) + 1px))', maskImage: 'radial-gradient(circle at 50% 50%, transparent var(--hole), #000 calc(var(--hole) + 1px))' }}>
-          {reduced ? (
-            <img src={LAST} alt="" className="absolute inset-0 h-full w-full object-cover" />
-          ) : (
-            <>
-              <video ref={video} className="absolute inset-0 h-full w-full object-cover" src="/media/cleaver.mp4" poster="/media/cleaver-poster.jpg" muted playsInline preload="auto" />
-              <div className="pointer-events-none absolute inset-0">
-                {Array.from({ length: STRIPS }, (_, i) => (
-                  <div key={i} ref={(el) => { strips.current[i] = el }} className="absolute inset-y-0 bg-ink" style={{ left: `${i * w}%`, width: `${w + 0.1}%`, clipPath: 'inset(0 0 0 0)' }} />
-                ))}
-              </div>
-              <div ref={halfA} className="absolute inset-0 will-change-transform" style={{ clipPath: CLIP_A, visibility: 'hidden' }}>
-                <img src={LAST} alt="" className="absolute inset-0 h-full w-full object-cover" />
-              </div>
-              <div ref={halfB} className="absolute inset-0 will-change-transform" style={{ clipPath: CLIP_B, visibility: 'hidden' }}>
-                <img src={LAST} alt="" className="absolute inset-0 h-full w-full object-cover" />
-              </div>
-              {/* the tram: box 100svh tall, lamp pinned to the stage centre, grows from the cut */}
-              <img ref={tram} src={TRAM} alt="Το τραμ της γραμμής 41 έρχεται καταπάνω σου" className="pointer-events-none absolute left-1/2 h-[100svh] w-auto max-w-none opacity-0 will-change-transform" style={{ WebkitMaskImage: 'radial-gradient(ellipse 50% 50% at 50% 52%, #000 70%, transparent 100%)', maskImage: 'radial-gradient(ellipse 50% 50% at 50% 52%, #000 70%, transparent 100%)', top: `${(0.5 - LAMP.y) * 100}svh`, transformOrigin: `${LAMP.x * 100}% ${LAMP.y * 100}%`, marginLeft: `calc(-100svh * ${TRAM_W / TRAM_H} * ${LAMP.x - 0.5})` }} />
-              <div ref={glow} className="pointer-events-none absolute left-1/2 top-1/2 h-[60vmax] w-[60vmax] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-0" style={{ background: 'radial-gradient(circle, rgba(255,232,190,.95) 0%, rgba(255,214,150,.55) 22%, rgba(122,31,39,0) 62%)' }} />
-              <div ref={shade} aria-hidden className="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink/70 via-transparent to-ink/30" />
-            </>
-          )}
-
-          <div ref={copy} className="absolute inset-x-5 bottom-8 z-10 md:inset-x-8 md:bottom-10">
-            <h1 ref={title} className="font-display text-[26vw] uppercase leading-[.82] md:text-[17vw]">Το Τραμ</h1>
-            <div ref={line} className="mt-2 h-[3px] w-full origin-left bg-red" />
-            <div className="mt-5 flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
-              <p ref={sub} className="max-w-[34ch] text-lg leading-snug text-ivory/90 md:text-xl">Παραδοσιακό κρεοπωλείο στον Πειραιά από το 1980. Κόβουμε μπροστά σου, την ώρα που το ζητάς.</p>
-              <div ref={cta} className="flex flex-col gap-3 sm:flex-row">
-                <Btn href="#paraggelia" onClick={go}>Παραγγελία</Btn>
-                <Btn href={SHOP.phoneHref} variant="ivory">{SHOP.phone}</Btn>
-              </div>
-            </div>
+        {/* the hub: four doors into the site */}
+        <div ref={hub} className={cn('absolute inset-0 z-20 flex flex-col bg-ink', !reduced && 'invisible')}>
+          <div ref={hubHead} className="flex items-end justify-between px-5 pb-3 pt-20 md:px-8 md:pt-24">
+            <p className="font-mono text-[12px] text-ivory/70">Τέρμα. Διάλεξε πού πας.</p>
+            <p className="hidden font-mono text-[12px] text-ivory/70 md:block">{SHOP.address} · Πειραιάς</p>
           </div>
-          <div ref={hint} className="pointer-events-none absolute right-5 top-24 z-10 font-mono text-[11px] uppercase tracking-[.2em] text-ivory/70 opacity-0 md:right-8">Κύλησε για την κοπή</div>
+          <nav aria-label="Είσοδοι" className="grid flex-1 grid-cols-2 gap-[2px] overflow-hidden px-[2px] pb-[2px] md:grid-cols-4">
+            {DOORS.map((d, i) => (
+              <a key={d.href} ref={(el) => { doors.current[i] = el }} href={d.href} onClick={go(d.href)} className="group relative block overflow-hidden bg-ink-2/20 no-underline">
+                <img src={d.src} alt="" className="absolute inset-0 h-full w-full object-cover opacity-55 transition duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.04] group-hover:opacity-90" />
+                <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/20 to-transparent" />
+                <span className="absolute left-4 top-4 font-mono text-[12px] text-ivory/80">{d.n}</span>
+                <span className="absolute right-4 top-4 h-2 w-2 bg-red opacity-0 transition group-hover:opacity-100" />
+                <div className="absolute inset-x-4 bottom-4 md:inset-x-5 md:bottom-6">
+                  <span className="block font-display text-[clamp(1.9rem,5.2vw,4.4rem)] uppercase leading-[.9] text-ivory">{d.label}</span>
+                  <span className="mt-2 block max-w-[26ch] font-mono text-[11px] text-ivory/70 opacity-0 transition duration-500 group-hover:opacity-100">{d.sub}</span>
+                </div>
+              </a>
+            ))}
+          </nav>
         </div>
+        {/* the flash of the crash, above everything */}
+        {!reduced && <div ref={flash} className="pointer-events-none absolute inset-0 z-30 opacity-0" style={{ background: 'radial-gradient(circle at 50% 50%, #FFF3D6 0%, #F2D9A6 45%, #EFEAE0 100%)' }} />}
       </div>
     </section>
   )

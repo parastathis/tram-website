@@ -5,9 +5,7 @@ import Preloader from '@/components/Preloader'
 import Hero from '@/sections/Hero'
 import Chapters from '@/sections/Chapters'
 import Cuts from '@/sections/Cuts'
-import Identity from '@/sections/Identity'
-import Line from '@/sections/Line'
-import Gallery from '@/sections/Gallery'
+import Shop from '@/sections/Shop'
 import Butcher from '@/sections/Butcher'
 import Reviews from '@/sections/Reviews'
 import Order from '@/sections/Order'
@@ -34,11 +32,9 @@ export default function App() {
       <main className={loaded ? '' : 'invisible'}>
         <Hero />
         <Chapters />
-        <Butcher />
         <Cuts />
-        <Identity />
-        <Line />
-        <Gallery />
+        <Shop />
+        <Butcher />
         <Reviews />
         <Order />
         <Hours />

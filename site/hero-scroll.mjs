@@ -7,7 +7,7 @@ for (const [name, w, h] of [['desk', 1440, 900], ['phone', 390, 844]]) {
   const enter = page.getByRole('button', { name: /Μπες/ }); if (await enter.count()) { await enter.first().click({ force: true }) }
   await page.waitForTimeout(2500)
   const total = await page.evaluate(() => document.getElementById('hero').offsetHeight - window.innerHeight)
-  for (const p of [0, 0.2, 0.4, 0.58, 0.68, 0.78, 0.9, 1.08]) {
+  for (const p of [0, 0.15, 0.3, 0.45, 0.58, 0.63, 0.72, 0.95]) {
     await page.evaluate((y) => window.scrollTo(0, y), Math.round(total * p)); await page.waitForTimeout(900)
     await page.screenshot({ path: `../shots/hs-${name}-${String(Math.round(p * 100)).padStart(3, '0')}.png` })
   }
