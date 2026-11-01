@@ -22,7 +22,8 @@ gsap.registerPlugin(ScrollTrigger)
 const STRIPS = 12
 const LAST = '/media/frames/f_0095.webp'
 const TFRAMES = 94
-const tframe = (i: number) => `/media/tram-frames/t_${String(i + 1).padStart(4, '0')}.webp`
+const IS_PHONE = typeof window !== 'undefined' && window.matchMedia('(max-width: 767px)').matches
+const tframe = (i: number) => `/media/${IS_PHONE ? 'tram-frames-m' : 'tram-frames'}/t_${String(i + 1).padStart(4, '0')}.webp`
 const CUT = 14
 const tcut = Math.tan((CUT * Math.PI) / 180) * 50
 const CLIP_A = `polygon(0 0, 100% 0, 100% ${50 - tcut + 0.4}%, 0 ${50 + tcut + 0.4}%)`
@@ -57,12 +58,10 @@ export default function Hero() {
   const hint = useRef<HTMLDivElement>(null)
   const [reduced] = useState(() => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches)
   const [phone] = useState(() => typeof window !== 'undefined' && window.matchMedia('(max-width: 767px)').matches)
-  const tramV = useRef<HTMLVideoElement>(null)
-  const played = useRef(false)
 
   // decode the tram frames up front (bitmaps, so a scrub is a blit, not a decode); desktop only
   useEffect(() => {
-    if (reduced || phone) return
+    if (reduced) return
     let alive = true
     const one = async (i: number) => {
       try {
@@ -96,7 +95,7 @@ export default function Hero() {
       tl.fromTo(line.current, { scaleX: 0 }, { scaleX: 1, duration: 1, ease: 'expo.inOut' }, 0.9)
       tl.fromTo([sub.current, cta.current], { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.8, stagger: 0.1 }, 1)
       tl.fromTo(hint.current, { opacity: 0 }, { opacity: 1, duration: 0.8 }, 2.2)
-      const start = () => { tl.play(); if (video.current) { video.current.playbackRate = phone ? 1.35 : 1; video.current.play().catch(() => {}) } }
+      const start = () => { tl.play(); if (video.current) { video.current.play().catch(() => {}) } }
       if (sessionStorage.getItem('tram-seen')) start()
       else window.addEventListener('tram:enter', start, { once: true })
       return () => window.removeEventListener('tram:enter', start)
@@ -104,34 +103,10 @@ export default function Hero() {
     return () => ctx.revert()
   }, [reduced, phone])
 
-  // phone: the sequence plays itself, a tap skips ahead. Film ends, cut, the tram film at double
-  // speed, crash, hub. No scrub: touch scroll stays native and the page continues below.
-  const playCut = () => {
-    if (played.current || reduced || !phone) return
-    played.current = true
-    const v = video.current, t = tramV.current
-    v?.pause()
-    const tl = gsap.timeline()
-    tl.to([copy.current, hint.current], { opacity: 0, duration: 0.25, ease: 'none' }, 0)
-    tl.set([halfA.current, halfB.current], { autoAlpha: 1 }, 0)
-    tl.set(v, { autoAlpha: 0 }, 0)
-    tl.set(t, { autoAlpha: 1, onComplete: () => { if (t) { t.currentTime = 0; t.playbackRate = 2; t.play().catch(() => {}) } } }, 0.05)
-    tl.to(shade.current, { opacity: 0, duration: 0.4, ease: 'none' }, 0)
-    tl.to(halfA.current, { xPercent: -24, yPercent: -80, duration: 1.1, ease: 'power2.in' }, 0.05)
-    tl.to(halfB.current, { xPercent: 24, yPercent: 80, duration: 1.1, ease: 'power2.in' }, 0.05)
-    // the crash lands when the lamp fills the frame (8 s film at 2x, minus a beat)
-    tl.to(stage.current, { x: 0, y: 0, duration: 0.5, ease: 'none', onUpdate() { const k = 1 - Math.abs(this.progress() - 0.5) * 2; gsap.set(stage.current, { x: (Math.random() - 0.5) * 18 * k, y: (Math.random() - 0.5) * 14 * k }) }, onComplete: () => gsap.set(stage.current, { x: 0, y: 0 }) }, 3.5)
-    tl.fromTo(flash.current, { opacity: 0 }, { opacity: 1, duration: 0.35, ease: 'power3.in' }, 3.45)
-    tl.set(hub.current, { autoAlpha: 1 }, 3.8)
-    tl.set(t, { autoAlpha: 0, onComplete: () => t?.pause() }, 3.85)
-    tl.fromTo(doors.current.filter(Boolean), { yPercent: 100 }, { yPercent: 0, duration: 0.9, ease: 'power3.out', stagger: 0.08 }, 3.85)
-    tl.to(flash.current, { opacity: 0, duration: 0.9, ease: 'power2.out' }, 3.95)
-    tl.fromTo(hubHead.current, { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.5 }, 4.5)
-  }
-
-  // scroll: the cut, the tram ride, the crash, the hub (desktop; the phone plays it)
+  // scroll: the cut, the tram ride, the crash, the hub (desktop and phone alike)
   useEffect(() => {
-    if (reduced || phone) return
+    if (reduced) return
+    ScrollTrigger.config({ ignoreMobileResize: true })
     const ctx = gsap.context(() => {
       let last = -1
       const fit = () => {
@@ -190,8 +165,8 @@ export default function Hero() {
   const w = 100 / STRIPS
 
   return (
-    <section ref={section} id="hero" data-theme="dark" className="relative w-full" style={{ height: reduced || phone ? 'auto' : '340vh' }} aria-label="Παραδοσιακό Κρεοπωλείο Το Τραμ, Πειραιάς">
-      <div ref={stage} onClick={phone ? playCut : undefined} className={cn('top-0 w-full overflow-hidden bg-ink text-ivory', reduced ? 'relative' : phone ? 'relative h-[100svh]' : 'sticky h-[100svh]')}>
+    <section ref={section} id="hero" data-theme="dark" className="relative w-full" style={{ height: reduced ? 'auto' : phone ? '300vh' : '340vh' }} aria-label="Παραδοσιακό Κρεοπωλείο Το Τραμ, Πειραιάς">
+      <div ref={stage} className={cn('top-0 w-full overflow-hidden bg-ink text-ivory', reduced ? 'relative' : 'sticky h-[100svh]')}>
         {reduced ? (
           <div className="relative h-[70svh]">
             <img src={LAST} alt="" className="absolute inset-0 h-full w-full object-cover opacity-70" />
@@ -201,7 +176,7 @@ export default function Hero() {
           </div>
         ) : (
           <>
-            <video ref={video} className="absolute inset-0 h-full w-full object-cover" poster="/media/cleaver-poster.jpg" muted playsInline preload="auto" onEnded={phone ? playCut : undefined}>
+            <video ref={video} className="absolute inset-0 h-full w-full object-cover" poster="/media/cleaver-poster.jpg" muted playsInline preload="auto">
               <source src="/media/cleaver-720.mp4" media="(max-width: 767px)" type="video/mp4" />
               <source src="/media/cleaver.mp4" type="video/mp4" />
             </video>
@@ -211,11 +186,7 @@ export default function Hero() {
               ))}
             </div>
             {/* the tram ride, under the halves */}
-            {phone ? (
-              <video ref={tramV} className="absolute inset-0 h-full w-full object-cover opacity-0" src="/media/tram-approach.mp4" muted playsInline preload="auto" aria-label="Το τραμ της γραμμής 41 έρχεται καταπάνω σου" />
-            ) : (
-              <canvas ref={tram} aria-label="Το τραμ της γραμμής 41 έρχεται καταπάνω σου" role="img" className="absolute inset-0 h-full w-full opacity-0" />
-            )}
+            <canvas ref={tram} aria-label="Το τραμ της γραμμής 41 έρχεται καταπάνω σου" role="img" className="absolute inset-0 h-full w-full opacity-0" />
             <div ref={halfA} className="absolute inset-0 will-change-transform" style={{ clipPath: CLIP_A, visibility: 'hidden' }}>
               <img src={LAST} alt="" className="absolute inset-0 h-full w-full object-cover" />
             </div>
@@ -235,7 +206,7 @@ export default function Hero() {
                 </div>
               </div>
             </div>
-            <div ref={hint} className="pointer-events-none absolute right-5 top-24 z-10 font-mono text-[11px] uppercase tracking-[.2em] text-ivory/70 opacity-0 md:right-8">{phone ? 'Πάτα για την κοπή' : 'Κύλησε για την κοπή'}</div>
+            <div ref={hint} className="pointer-events-none absolute right-5 top-24 z-10 font-mono text-[11px] uppercase tracking-[.2em] text-ivory/70 opacity-0 md:right-8">Κύλησε για την κοπή</div>
           </>
         )}
 
