@@ -17,13 +17,15 @@ import Footer from '@/sections/Footer'
 export default function App() {
   const [dark, setDark] = useState(true)
   const [loaded, setLoaded] = useState(false)
-  const onDone = useCallback(() => setLoaded(true), [])
+  const onDone = useCallback(() => { setLoaded(true); window.dispatchEvent(new CustomEvent('tram:enter')) }, [])
   useEffect(() => {
     initSmooth()
     const els = Array.from(document.querySelectorAll<HTMLElement>('main > section'))
     const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) setDark((e.target as HTMLElement).dataset.theme === 'dark') }), { rootMargin: '-8% 0px -88% 0px' })
     els.forEach((el) => io.observe(el))
-    return () => io.disconnect()
+    const onTheme = (e: Event) => setDark(Boolean((e as CustomEvent<{ dark: boolean }>).detail?.dark))
+    window.addEventListener('tram:theme', onTheme)
+    return () => { io.disconnect(); window.removeEventListener('tram:theme', onTheme) }
   }, [])
   return (
     <>
