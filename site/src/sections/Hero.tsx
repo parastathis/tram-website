@@ -48,7 +48,8 @@ export default function Hero() {
   const halfA = useRef<HTMLDivElement>(null)
   const halfB = useRef<HTMLDivElement>(null)
   const shade = useRef<HTMLDivElement>(null)
-  const tram = useRef<HTMLImageElement>(null)
+  const tram = useRef<HTMLCanvasElement>(null)
+  const frames = useRef<(ImageBitmap | HTMLImageElement | null)[]>([])
   const flash = useRef<HTMLDivElement>(null)
   const hub = useRef<HTMLDivElement>(null)
   const doors = useRef<(HTMLAnchorElement | null)[]>([])
@@ -56,15 +57,29 @@ export default function Hero() {
   const hint = useRef<HTMLDivElement>(null)
   const [reduced] = useState(() => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches)
 
-  // preload the tram frames in the background
+  // decode the tram frames up front (bitmaps, so a scrub is a blit, not a decode)
   useEffect(() => {
     if (reduced) return
-    let i = 0
-    const load = () => {
-      for (let k = 0; k < 8 && i < TFRAMES; k++, i++) { const im = new Image(); im.src = tframe(i) }
-      if (i < TFRAMES) setTimeout(load, 60)
+    let alive = true
+    const one = async (i: number) => {
+      try {
+        const r = await fetch(tframe(i))
+        const b = await r.blob()
+        const bm = 'createImageBitmap' in window ? await createImageBitmap(b) : await new Promise<HTMLImageElement>((ok, no) => { const im = new Image(); im.onload = () => ok(im); im.onerror = no; im.src = URL.createObjectURL(b) })
+        if (alive) frames.current[i] = bm
+      } catch { /* a missing frame falls back to the nearest one */ }
     }
-    load()
+    const run = async () => {
+      // first and last frames first, then the rest in order, three at a time
+      await Promise.all([one(0), one(TFRAMES - 1)])
+      for (let i = 1; i < TFRAMES - 1 && alive; i += 3) await Promise.all([one(i), one(i + 1), one(i + 2)].filter(Boolean))
+    }
+    // wait for the film to be playing before pulling 2 MB of frames, so the film never starves
+    let t = 0
+    const start = () => { t = window.setTimeout(run, 1200) }
+    if (sessionStorage.getItem('tram-seen')) start()
+    else window.addEventListener('tram:enter', start, { once: true })
+    return () => { alive = false; window.clearTimeout(t); window.removeEventListener('tram:enter', start) }
   }, [reduced])
 
   // entry: strips off the film, the film plays through once and holds the landed blade
@@ -91,24 +106,39 @@ export default function Hero() {
     if (reduced) return
     const ctx = gsap.context(() => {
       let last = -1
-      const draw = (p: number) => {
-        const idx = Math.min(TFRAMES - 1, Math.max(0, Math.floor(p * (TFRAMES - 1))))
-        if (idx === last) return
-        last = idx
-        if (tram.current) tram.current.src = tframe(idx)
+      const fit = () => {
+        const c = tram.current; if (!c) return
+        const dpr = Math.min(window.devicePixelRatio || 1, 1.5)
+        c.width = Math.round(c.clientWidth * dpr); c.height = Math.round(c.clientHeight * dpr)
+        last = -1
       }
+      const draw = (p: number) => {
+        const c = tram.current; if (!c) return
+        let idx = Math.min(TFRAMES - 1, Math.max(0, Math.round(p * (TFRAMES - 1))))
+        while (idx > 0 && !frames.current[idx]) idx--
+        const f = frames.current[idx]
+        if (!f || idx === last) return
+        last = idx
+        const ctx2 = c.getContext('2d'); if (!ctx2) return
+        const fw = 'width' in f ? f.width : 1280, fh = 'height' in f ? f.height : 720
+        const s = Math.max(c.width / fw, c.height / fh)
+        const dw = fw * s, dh = fh * s
+        ctx2.drawImage(f, (c.width - dw) / 2, (c.height - dh) / 2, dw, dh)
+      }
+      fit()
+      window.addEventListener('resize', fit)
       const ride = { p: 0 }
-      const tl = gsap.timeline({ scrollTrigger: { trigger: section.current, start: 'top top', end: 'bottom bottom', scrub: 0.35, invalidateOnRefresh: true } })
+      const tl = gsap.timeline({ scrollTrigger: { trigger: section.current, start: 'top top', end: 'bottom bottom', scrub: 0.9, invalidateOnRefresh: true, onRefresh: fit } })
       tl.to(copy.current, { opacity: 0, ease: 'none', duration: 0.08 }, 0)
       tl.to(hint.current, { opacity: 0, ease: 'none', duration: 0.04 }, 0)
       tl.set([halfA.current, halfB.current], { autoAlpha: 1 }, 0.04)
       tl.set(video.current, { autoAlpha: 0 }, 0.04)
-      tl.set(tram.current, { autoAlpha: 1 }, 0.04)
       tl.to(shade.current, { opacity: 0, ease: 'none', duration: 0.1 }, 0.04)
       tl.to(halfA.current, { xPercent: -24, yPercent: -80, ease: 'power2.in', duration: 0.3 }, 0.04)
       tl.to(halfB.current, { xPercent: 24, yPercent: 80, ease: 'power2.in', duration: 0.3 }, 0.04)
       // the ride: frame by frame, with the hand
       tl.to(ride, { p: 1, ease: 'none', duration: 0.56, onUpdate: () => draw(ride.p) }, 0.06)
+      tl.set(tram.current, { autoAlpha: 1, onComplete: () => draw(0) }, 0.04)
       // the crash: shake and flash
       tl.to(stage.current, { x: 0, y: 0, duration: 0.08, ease: 'none', onUpdate() { const k = 1 - Math.abs(this.progress() - 0.5) * 2; gsap.set(stage.current, { x: (Math.random() - 0.5) * 22 * k, y: (Math.random() - 0.5) * 16 * k }) }, onComplete: () => gsap.set(stage.current, { x: 0, y: 0 }) }, 0.6)
       tl.fromTo(flash.current, { opacity: 0 }, { opacity: 1, ease: 'power3.in', duration: 0.06 }, 0.58)
@@ -118,6 +148,7 @@ export default function Hero() {
       tl.fromTo(doors.current.filter(Boolean), { yPercent: 100 }, { yPercent: 0, ease: 'power3.out', duration: 0.22, stagger: 0.035 }, 0.64)
       tl.to(flash.current, { opacity: 0, ease: 'power2.out', duration: 0.18 }, 0.66)
       tl.fromTo(hubHead.current, { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.14 }, 0.78)
+      return () => window.removeEventListener('resize', fit)
     }, section)
     return () => ctx.revert()
   }, [reduced])
@@ -149,7 +180,7 @@ export default function Hero() {
               ))}
             </div>
             {/* the tram ride, under the halves */}
-            <img ref={tram} src={tframe(0)} alt="Το τραμ της γραμμής 41 έρχεται καταπάνω σου" className="absolute inset-0 h-full w-full object-cover opacity-0" draggable={false} />
+            <canvas ref={tram} aria-label="Το τραμ της γραμμής 41 έρχεται καταπάνω σου" role="img" className="absolute inset-0 h-full w-full opacity-0" />
             <div ref={halfA} className="absolute inset-0 will-change-transform" style={{ clipPath: CLIP_A, visibility: 'hidden' }}>
               <img src={LAST} alt="" className="absolute inset-0 h-full w-full object-cover" />
             </div>
