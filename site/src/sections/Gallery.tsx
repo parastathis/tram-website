@@ -6,7 +6,6 @@ import { useState } from 'react'
 import MorphGallery from '@/components/MorphGallery'
 
 const ITEMS = [
-  { src: '/media/gen/ippokratis-wide.webp', alt: 'Ο Ιπποκράτης στον πάγκο', title: 'Ο Ιπποκράτης στον πάγκο' },
   { src: '/media/gen/case.webp', alt: 'Η βιτρίνα', title: 'Η βιτρίνα, κάθε πρωί στις 7' },
   { src: '/media/gen/ribs.webp', alt: 'Μοσχάρι', title: 'Μοσχάρι Ελασσόνας' },
   { src: '/media/gen/sausages.webp', alt: 'Λουκάνικα', title: 'Λουκάνικα του εργαστηρίου' },

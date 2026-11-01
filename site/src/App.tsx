@@ -8,7 +8,7 @@ import Cuts from '@/sections/Cuts'
 import Identity from '@/sections/Identity'
 import Line from '@/sections/Line'
 import Gallery from '@/sections/Gallery'
-import Shop from '@/sections/Shop'
+import Butcher from '@/sections/Butcher'
 import Reviews from '@/sections/Reviews'
 import Order from '@/sections/Order'
 import Hours from '@/sections/Hours'
@@ -32,11 +32,11 @@ export default function App() {
       <main className={loaded ? '' : 'invisible'}>
         <Hero />
         <Chapters />
+        <Butcher />
         <Cuts />
         <Identity />
         <Line />
         <Gallery />
-        <Shop />
         <Reviews />
         <Order />
         <Hours />

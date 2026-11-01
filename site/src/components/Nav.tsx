@@ -15,6 +15,7 @@ import { cn } from '@/lib/cn'
 
 export const LINKS = [
   { label: 'Τα κρέατα', href: '#kreata' },
+  { label: 'Ο Ιπποκράτης', href: '#ippokratis' },
   { label: 'Ποιο κομμάτι', href: '#kommati' },
   { label: 'Ταυτότητα', href: '#taftotita' },
   { label: 'Η γραμμή 41', href: '#grammi' },
