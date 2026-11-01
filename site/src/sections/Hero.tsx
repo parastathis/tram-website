@@ -21,7 +21,7 @@ gsap.registerPlugin(ScrollTrigger)
 
 const STRIPS = 12
 const LAST = '/media/frames/f_0095.webp'
-const TFRAMES = 95
+const TFRAMES = 94
 const tframe = (i: number) => `/media/tram-frames/t_${String(i + 1).padStart(4, '0')}.webp`
 const CUT = 14
 const tcut = Math.tan((CUT * Math.PI) / 180) * 50
@@ -156,7 +156,7 @@ export default function Hero() {
       fit()
       window.addEventListener('resize', fit)
       const ride = { p: 0 }
-      const tl = gsap.timeline({ scrollTrigger: { trigger: section.current, start: 'top top', end: 'bottom bottom', scrub: 0.9, invalidateOnRefresh: true, onRefresh: fit } })
+      const tl = gsap.timeline({ scrollTrigger: { trigger: section.current, start: 'top top', end: 'bottom bottom', scrub: 0.9, invalidateOnRefresh: true, onRefresh: fit, onLeaveBack: () => { const v = video.current; if (v) { v.currentTime = 0; v.play().catch(() => {}) } } } })
       tl.to(copy.current, { opacity: 0, ease: 'none', duration: 0.08 }, 0)
       tl.to(hint.current, { opacity: 0, ease: 'none', duration: 0.04 }, 0)
       tl.set([halfA.current, halfB.current], { autoAlpha: 1 }, 0.04)
@@ -201,7 +201,10 @@ export default function Hero() {
           </div>
         ) : (
           <>
-            <video ref={video} className="absolute inset-0 h-full w-full object-cover" src="/media/cleaver.mp4" poster="/media/cleaver-poster.jpg" muted playsInline preload="auto" onEnded={phone ? playCut : undefined} />
+            <video ref={video} className="absolute inset-0 h-full w-full object-cover" poster="/media/cleaver-poster.jpg" muted playsInline preload="auto" onEnded={phone ? playCut : undefined}>
+              <source src="/media/cleaver-720.mp4" media="(max-width: 767px)" type="video/mp4" />
+              <source src="/media/cleaver.mp4" type="video/mp4" />
+            </video>
             <div className="pointer-events-none absolute inset-0">
               {Array.from({ length: STRIPS }, (_, i) => (
                 <div key={i} ref={(el) => { strips.current[i] = el }} className="absolute inset-y-0 bg-ink" style={{ left: `${i * w}%`, width: `${w + 0.1}%`, clipPath: 'inset(0 0 0 0)' }} />
