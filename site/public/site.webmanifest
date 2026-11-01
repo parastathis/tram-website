@@ -1,0 +1,1 @@
+{ "name": "Το Τραμ, Κρεοπωλείο", "short_name": "Το Τραμ", "icons": [ { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" }, { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" } ], "theme_color": "#0E0C0D", "background_color": "#EFEAE0", "display": "standalone" }

@@ -1,1 +1,14 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="4" fill="#C8262D"/><text x="16" y="22" text-anchor="middle" font-family="Georgia, serif" font-weight="800" font-size="16" fill="#F2EFE9">ΤΡ</text></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <clipPath id="up"><polygon points="0,0 64,0 64,28 0,44"/></clipPath>
+    <clipPath id="dn"><polygon points="0,44 64,28 64,64 0,64"/></clipPath>
+  </defs>
+  <rect width="64" height="64" rx="12" fill="#0E0C0D"/>
+  <g clip-path="url(#up)">
+    <path d="M14 11h36v11H38v33H26V22H14z" fill="#EFEAE0"/>
+  </g>
+  <g clip-path="url(#dn)" transform="translate(2.6 1.6)">
+    <path d="M14 11h36v11H38v33H26V22H14z" fill="#EFEAE0"/>
+  </g>
+  <line x1="-4" y1="47" x2="68" y2="29" stroke="#7A1F27" stroke-width="2.4"/>
+</svg>

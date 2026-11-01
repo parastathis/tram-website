@@ -30,9 +30,9 @@ function LinkHover({ label, href, onClick }: { label: string; href: string; onCl
   return (
     <a href={href} onClick={onClick} className="group/l inline-block no-underline">
       <span className="sr-only">{label}</span>
-      <span aria-hidden className="relative inline-block overflow-hidden align-middle leading-[1.02]">
+      <span aria-hidden className="relative block h-[1em] overflow-hidden leading-none">
         {[...label].map((ch, i) => (
-          <span key={i} className="relative inline-block whitespace-pre transition-transform duration-500 ease-[cubic-bezier(0.625,0.05,0,1)] group-hover/l:-translate-y-[1.2em] group-focus-visible/l:-translate-y-[1.2em]" style={{ textShadow: '0 1.2em currentColor', transitionDelay: `${i * 18}ms` }}>{ch}</span>
+          <span key={i} className="relative inline-block whitespace-pre leading-none transition-transform duration-500 ease-[cubic-bezier(0.625,0.05,0,1)] group-hover/l:-translate-y-[1em] group-focus-visible/l:-translate-y-[1em]" style={{ textShadow: '0 1em currentColor', transitionDelay: `${i * 18}ms` }}>{ch}</span>
         ))}
       </span>
     </a>
@@ -131,11 +131,12 @@ export default function Nav({ dark }: { dark: boolean }) {
       </header>
 
       <nav ref={overlay} style={{ clipPath: CLIP.closedInitial }} className={cn('fixed inset-0 z-[60] overflow-y-auto bg-red text-ivory', open ? 'pointer-events-auto' : 'pointer-events-none')} aria-hidden={!open} aria-label="Κύριο μενού">
-        <div ref={wrap} className="flex min-h-screen w-full flex-col justify-between gap-10 px-5 pb-8 pt-24 md:px-12 md:pb-10 md:pt-28">
+        <div ref={wrap} className="flex min-h-[100svh] w-full flex-col justify-between gap-8 px-5 pb-8 pt-20 md:px-12 md:pb-10 md:pt-24">
           <div className="flex items-start justify-between gap-10 max-[1025px]:flex-col">
             <div className="flex flex-col">
               {LINKS.map((l, i) => (
-                <div key={l.href} ref={(el) => { items.current[i] = el }} className={cn('font-display text-[13vw] uppercase leading-[.9] max-[1025px]:text-[16vw]', active === l.href && 'underline decoration-4 underline-offset-8')} style={{ opacity: 0 }}>
+                <div key={l.href} ref={(el) => { items.current[i] = el }} className={cn('flex items-baseline gap-4 py-[0.06em] font-display text-[min(7.2vw,9vh)] uppercase leading-none max-[1025px]:text-[min(12.5vw,7.4vh)]', active === l.href ? 'text-ivory' : 'text-ivory/90')} style={{ opacity: 0 }}>
+                  <span className="w-[1.6em] shrink-0 font-mono text-[11px] text-ivory/60">{String(i + 1).padStart(2, '0')}{active === l.href ? ' ●' : ''}</span>
                   <LinkHover label={l.label} href={l.href} onClick={go(l.href)} />
                 </div>
               ))}
