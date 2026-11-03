@@ -15,9 +15,11 @@ import { cn } from '@/lib/cn'
 
 export const LINKS = [
   { label: 'Τα κρέατα', href: '#kreata' },
+  { label: 'Ο πάγκος', href: '#pagkos' },
   { label: 'Ποιο κομμάτι', href: '#kommati' },
   { label: 'Το μαγαζί', href: '#magazi' },
   { label: 'Ο Ιπποκράτης', href: '#ippokratis' },
+  { label: 'Νέα', href: '#nea' },
   { label: 'Παραγγελία', href: '#paraggelia' },
   { label: 'Ώρες & πού', href: '#ores' },
 ]
@@ -141,7 +143,7 @@ export default function Nav({ dark }: { dark: boolean }) {
               ))}
             </div>
             <div className="flex items-end gap-6 max-[1025px]:w-full max-[1025px]:flex-row">
-              {['/media/gen/case.webp', '/media/gen/tram.webp'].map((src, i) => (
+              {['/media/real/interior-sm.webp', '/media/real/bag-sm.webp'].map((src, i) => (
                 <div key={src} ref={(el) => { imgs.current[i] = el }} className="relative h-[16vw] w-[22vw] overflow-hidden max-[1025px]:h-[28vw] max-[1025px]:w-1/2" style={{ opacity: 0 }}>
                   <img src={src} alt="" className="absolute inset-0 h-full w-full object-cover" />
                 </div>

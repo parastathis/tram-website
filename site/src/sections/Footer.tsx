@@ -36,9 +36,9 @@ export default function Footer() {
             <div>
               <h3 className="text-sm font-semibold">Σελίδα</h3>
               <ul className="mt-4 flex flex-col gap-2 text-sm text-ink-2">
-                <li><a className="hover:text-ink" href="#grammi">Τα είδη</a></li>
-                <li><a className="hover:text-ink" href="#taftotita">Ταυτότητα κρέατος</a></li>
-                <li><a className="hover:text-ink" href="#paraskeves">Παρασκευές</a></li>
+                <li><a className="hover:text-ink" href="#kreata">Τα κρέατα</a></li>
+                <li><a className="hover:text-ink" href="#pagkos">Ο πάγκος, με τιμές</a></li>
+                <li><a className="hover:text-ink" href="#nea">Νέα</a></li>
                 <li><a className="hover:text-ink" href="#paraggelia">Παραγγελία</a></li>
                 <li><a className="hover:text-ink" href="#ores">Ώρες & πού</a></li>
               </ul>

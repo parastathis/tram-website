@@ -52,7 +52,7 @@ export default function Cuts() {
             <h2 className="mt-3 font-display text-[clamp(3.2rem,8vw,7rem)] uppercase leading-[.9]">Ποιο κομμάτι να πάρω;</h2>
             <p className="mt-5 max-w-[42ch] text-lg text-ink-2">Ό,τι ρωτάς στον πάγκο. Απάντησε στα τέσσερα και σου λέμε κομμάτι και κιλά, έτοιμα για παραγγελία.</p>
             <div className="mt-10 hidden aspect-[16/10] w-full overflow-hidden bg-ivory-2 md:block">
-              <img src="/media/gen/chart.webp" alt="Σχέδιο με τα κομμάτια του μοσχαριού" className="h-full w-full object-cover" loading="lazy" onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/media/gen/ribs.webp' }} />
+              <img src="/media/p/cmvtxlycr001n08l2q47o96j8.webp" alt="Στηθοπλευρές από νεαρό μοσχάρι Ελασσόνας" className="h-full w-full object-cover" loading="lazy" />
             </div>
           </div>
 

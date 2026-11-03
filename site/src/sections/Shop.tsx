@@ -1,9 +1,10 @@
 /**
- * Το μαγαζί. Every picture generated in Google Flow (Nano Banana) with the owner's own Drive photos
- * of the corner shop as references (sign, bags, the tram clock, the boats on the shelf, the labels,
- * the machines), plus the films (Veo 3.1): the case and the sausages; the walk-in film comes when the Veo quota resets. Motion: the walk-in opens with a slit (clip-path, like a tram door), then the
- * photos rise in a staggered grid; the traceability label is set as a typographic document with
- * block-wipe lines (21st.dev "Text Animation" by ajith66310, simplified to clip-path).
+ * Το μαγαζί, in its own photos. Every picture here is a real photo of the corner shop (the owner's
+ * Drive), all passed through one grade (scripts/grade.py: white balance, levels, a soft curve, a
+ * little warmth) and one set of crops, so they read as one shoot. Nothing painted in or removed.
+ * Motion: the walk-in opens with a slit (clip-path, like a tram door), then the photos rise in a
+ * staggered grid; the traceability label is set as a typographic document with block-wipe lines
+ * (21st.dev "Text Animation" by ajith66310, simplified to clip-path).
  */
 import { useRef } from 'react'
 import { motion, useInView, useScroll, useTransform } from 'motion/react'
@@ -17,15 +18,16 @@ const ROWS = [
   ['Κοπή', 'Σαλαμίνος 124, Πειραιάς'],
 ]
 
-type Tile = { src: string; video?: string; alt: string; cap: string; span: string; ratio: string }
+type Tile = { src: string; alt: string; cap: string; span: string; ratio: string }
+const R = (n: string) => `/media/real/${n}.webp`
 const TILES: Tile[] = [
-  { src: '/media/gen/case.webp', video: '/media/case.mp4', alt: 'Η φωτισμένη βιτρίνα με τα κρέατα', cap: 'Η βιτρίνα, κάθε πρωί στις 7', span: 'md:col-span-7', ratio: 'aspect-[4/5] md:aspect-auto md:min-h-full' },
-  { src: '/media/gen/shop-bag.webp', alt: 'Η σακούλα με το τραμ στο χέρι', cap: 'Η σακούλα με το βαγόνι', span: 'md:col-span-5', ratio: 'aspect-[3/4]' },
-  { src: '/media/gen/shop-clock.webp', alt: 'Το ρολόι του μαγαζιού με το τραμ', cap: 'Παράδοση από το 1980', span: 'md:col-span-4', ratio: 'aspect-[3/4]' },
-  { src: '/media/gen/shop-boats.webp', alt: 'Τα καΐκια στο ράφι πάνω από τη βιτρίνα', cap: 'Τα καΐκια του Ιπποκράτη', span: 'md:col-span-4', ratio: 'aspect-[3/4]' },
-  { src: '/media/gen/shop-label.webp', alt: 'Χέρι με γάντι πάνω στο μοσχάρι με την ετικέτα', cap: 'Κάθε κομμάτι με την ετικέτα του', span: 'md:col-span-4', ratio: 'aspect-[3/4]' },
-  { src: '/media/gen/shop-workshop.webp', alt: 'Το εργαστήριο με την κρεατομηχανή και τον πάγκο', cap: 'Το εργαστήριο', span: 'md:col-span-7', ratio: 'aspect-[4/5] md:aspect-auto md:min-h-full' },
-  { src: '/media/gen/sausages.webp', video: '/media/sausages.mp4', alt: 'Λουκάνικα κρεμασμένα στο εργαστήριο', cap: 'Λουκάνικα του εργαστηρίου', span: 'md:col-span-5', ratio: 'aspect-[3/4]' },
+  { src: R('interior'), alt: 'Το εσωτερικό του καταστήματος με την κυρτή βιτρίνα', cap: 'Η βιτρίνα, κάθε πρωί από τις 7', span: 'md:col-span-7', ratio: 'aspect-[4/5] md:aspect-auto md:min-h-full' },
+  { src: R('bag'), alt: 'Η σακούλα του καταστήματος με το κόκκινο τραμ', cap: 'Η σακούλα με το βαγόνι', span: 'md:col-span-5', ratio: 'aspect-[4/5]' },
+  { src: R('clock'), alt: 'Το ρολόι του καταστήματος με το τραμ', cap: 'Το ρολόι του μαγαζιού', span: 'md:col-span-4', ratio: 'aspect-[4/5]' },
+  { src: R('boats'), alt: 'Καΐκι στο ράφι πάνω από τη βιτρίνα', cap: 'Τα καΐκια στο ράφι', span: 'md:col-span-4', ratio: 'aspect-[4/5]' },
+  { src: R('label-hand'), alt: 'Μοσχάρι με την ετικέτα ιχνηλασιμότητας', cap: 'Κάθε κομμάτι με την ετικέτα του', span: 'md:col-span-4', ratio: 'aspect-[4/5]' },
+  { src: R('aisle'), alt: 'Ράφια και ψυγεία του καταστήματος', cap: 'Ψυγεία, ράφια, μαναβική', span: 'md:col-span-5', ratio: 'aspect-[4/5]' },
+  { src: R('farm-box'), alt: 'Κιβώτιο της Φάρμας Ελασσόνας', cap: 'Από τη Φάρμα Ελασσόνας', span: 'md:col-span-7', ratio: 'aspect-[4/5] md:aspect-auto md:min-h-full' },
 ]
 
 function Frame({ t, i }: { t: Tile; i: number }) {
@@ -34,8 +36,7 @@ function Frame({ t, i }: { t: Tile; i: number }) {
   return (
     <motion.figure ref={ref} className={`relative overflow-hidden bg-ivory-2 ${t.span} ${t.ratio}`} initial={{ clipPath: 'inset(100% 0 0 0)' }} animate={show ? { clipPath: 'inset(0% 0 0 0)' } : {}} transition={{ duration: 1.1, delay: (i % 3) * 0.08, ease: [0.76, 0, 0.24, 1] }}>
       <div className="absolute inset-0">
-        <img src={t.src} alt={t.alt} className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
-        {t.video && <video className="absolute inset-0 h-full w-full object-cover" src={t.video} poster={t.src} autoPlay muted loop playsInline preload="metadata" onError={(e) => { (e.currentTarget as HTMLVideoElement).style.display = 'none' }} />}
+        <img src={t.src.replace('.webp', '-sm.webp')} srcSet={`${t.src.replace('.webp', '-sm.webp')} 820w, ${t.src} 1800w`} sizes="(min-width: 768px) 50vw, 100vw" alt={t.alt} className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
       </div>
       <figcaption className="absolute bottom-3 left-3 bg-ivory px-3 py-1 font-mono text-[12px] text-ink">{t.cap}</figcaption>
     </motion.figure>
@@ -57,14 +58,17 @@ export default function Shop() {
       <div ref={film} className="relative h-[100svh] overflow-hidden bg-ink text-ivory">
         <motion.div className="absolute inset-0" initial={{ clipPath: 'inset(49.5% 0 49.5% 0)' }} animate={open ? { clipPath: 'inset(0% 0 0% 0)' } : {}} transition={{ duration: 1.3, ease: [0.76, 0, 0.24, 1] }}>
           <motion.div className="absolute inset-x-0 -inset-y-[8%]" style={{ y, scale }}>
-            <img src="/media/gen/shop-front.webp" alt="Η γωνία Σπάρτης και Σαλαμίνος με την ταμπέλα Το Τραμ" className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
+            <picture>
+              <source media="(max-width: 767px)" srcSet="/media/real/interior-sm.webp" />
+              <img src="/media/real/counter.webp" alt="Ο πάγκος και το εργαστήριο του καταστήματος" className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
+            </picture>
           </motion.div>
           <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-ink/85 via-ink/10 to-ink/20" />
         </motion.div>
         <div className="relative mx-auto flex h-full max-w-[1440px] flex-col justify-end px-5 pb-14 md:px-8 md:pb-20">
           <p className="font-mono text-[12px] text-ivory/80">{SHOP.address} · Κοπή, Πειραιάς</p>
           <h2 className="mt-3 font-display text-[clamp(3.4rem,10vw,9rem)] uppercase leading-[.85]">Μπες στο<br />μαγαζί</h2>
-          <p className="mt-6 max-w-[46ch] text-lg text-ivory/85 md:text-xl">Γωνιακό, με την ταμπέλα του 1980 και το βαγόνι στη σακούλα. Η βιτρίνα στρώνεται κάθε πρωί, το εργαστήριο είναι πίσω της και ο πάγκος μπροστά σου.</p>
+          <p className="mt-6 max-w-[46ch] text-lg text-ivory/85 md:text-xl">Ανοιχτό από τον Σεπτέμβριο του 1983, δεύτερη γενιά. Το όνομα το έδωσε το τραμ που τη δεκαετία του '70 περνούσε μπροστά από τη γειτονιά. Εξυπηρετούμε όλο τον Πειραιά.</p>
         </div>
       </div>
 

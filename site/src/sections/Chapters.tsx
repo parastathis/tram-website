@@ -3,8 +3,8 @@
  * https://21st.dev/@hyperiux/components/parallax-strip-slider
  * Kept: fullscreen slides, each incoming slide revealed through staggered vertical strips with a
  * Ken-Burns zoom, SplitText title char reveal, progress bar, counter, click-to-navigate halves with
- * a circular follow cursor, stacked layout on touch. Changed: slides are the generated product
- * chapters of this shop, the display face is the condensed brand face, the cursor is tram red.
+ * a circular follow cursor, stacked layout on touch. Changed: slides are the product
+ * families of this shop, on the uniform marble photos of its Orderoo menu, the display face is the condensed brand face, the cursor is tram red.
  */
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import gsap from 'gsap'
@@ -14,13 +14,14 @@ import { getLenis } from '@/lib/smooth'
 
 gsap.registerPlugin(SplitText)
 
+const P = (id: string) => `/media/p/${id}.webp`
 const SLIDES = [
-  { src: '/media/gen/ribs.webp', title: 'Μοσχάρι', chapter: 'Ελληνικό, νεαρό ζώο, με ετικέτα', text: 'Μπριζόλες, κιλότο, σπάλα, κιμάς της ώρας. Από τη Φάρμα Ελασσόνας, με ταυτότητα AU2+.' },
-  { src: '/media/gen/lamb.webp', title: 'Αρνί & κατσίκι', chapter: 'Από τη Φάρμα Ελασσόνας', text: 'Αρνάκι και κατσικάκι γάλακτος, ολόκληρα ή σε μερίδες. Για σούβλα και φούρνο, με παραγγελία.' },
-  { src: '/media/gen/pork.webp', title: 'Χοιρινό', chapter: 'Από τη Φάρμα Ελασσόνας', text: 'Στο πάχος που θέλεις: πανσέτα, μπριζόλες, λαιμός, ρολό γεμιστό. Κόβεται μπροστά σου.' },
-  { src: '/media/gen/sausages.webp', title: 'Λουκάνικα', chapter: 'Χειροποίητα, εδώ', text: 'Χωριάτικα, με πορτοκάλι και πράσο. Και το μοσχαρίσιο πικάντικο σουτζούκι που ζητάνε με το όνομά του.' },
-  { src: '/media/gen/kokoretsi.webp', title: 'Κοκορέτσι', chapter: 'Τυλιγμένο στο χέρι', text: 'Για το Πάσχα και κάθε Κυριακή που έχει σούβλα. Κλείνεται λίγες μέρες πριν.' },
-  { src: '/media/gen/case.webp', title: 'Η βιτρίνα', chapter: 'Κάθε πρωί από τις 7', text: 'Κοτόπουλο Πίνδου, μπιφτέκια, μαριναρισμένα, κατεψυγμένα και μαναβική. Ό,τι χρειάζεται το τραπέζι, σε μία στάση.' },
+  { src: P('cmvtxlxlk000808l2epj2d90r'), title: 'Μοσχάρι', chapter: 'Νεαρό ζώο, από τη Φάρμα Ελασσόνας', text: 'Κόντρα, κιλότο, σπάλα, ελιά, φιλέτο, κιμάς της ώρας. Κάθε κομμάτι έρχεται με την ετικέτα του: γέννηση, εκτροφή και σφαγή στην Ελλάδα.' },
+  { src: P('cmvtxm5ib004508l2y09w6m9r'), title: 'Αρνί & κατσίκι', chapter: 'Γάλακτος, ολόκληρα ή σε μερίδες', text: 'Ολόκληρο, μισό με ή χωρίς κεφάλι και συκωταριά, χεράκι, μπούτι και παϊδάκια. Για τη σούβλα του Πάσχα, με παραγγελία.' },
+  { src: P('cmvtxm04l002a08l2h8etklu3'), title: 'Χοιρινό', chapter: 'Από τη Φάρμα Ελασσόνας', text: 'Πανσέτα, μπριζόλα, μπούτι, ελιά, κότσι. Κόβεται στο πάχος που θέλεις, την ώρα που το ζητάς.' },
+  { src: P('cmvtxm2dn002v08l24ph8467h'), title: 'Κοτόπουλο', chapter: 'Ελληνικό, από την Πίνδο', text: 'Ολόκληρο ή σε μερίδες: φιλέτο, μπούτι, κοπανάκια, φτερούγες. Και μαριναρισμένο από εμάς, έτοιμο για τον φούρνο.' },
+  { src: P('cmvtxm8qb005a08l2xrnnjkoe'), title: 'Λουκάνικα', chapter: 'Παραγωγής μας', text: 'Χωριάτικο λουκάνικο από ελληνικό χοιρινό της Φάρμας Ελασσόνας. Και το μοσχαρίσιο σουτζούκι πικάντικο που ζητάνε με το όνομά του.' },
+  { src: P('cmvtxm8io004w08l280oylojw'), title: 'Παρασκευές', chapter: 'Φτιαγμένες στο εργαστήριο', text: 'Κοντοσούβλι, ρολά γεμιστά, σουβλάκια, μπιφτέκια, κοκορέτσι και γαρδούμπα. Δεκαοκτώ παρασκευές, έτοιμες για σχάρα και φούρνο.' },
 ]
 const STRIPS = 10, REVEAL = 0.5, STAGGER = 0.04, ZOOM_FROM = 1.2, ZOOM = 0.9, AUTOPLAY = 5000
 const reduced = () => window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches ?? false
@@ -135,7 +136,7 @@ export default function Chapters() {
     )
   })
   const active = SLIDES[caption]
-  const go = (e: React.MouseEvent) => { e.preventDefault(); const el = document.getElementById('paraggelia'); const l = getLenis(); if (el) l ? l.scrollTo(el, { duration: 1.6 }) : el.scrollIntoView({ behavior: 'smooth' }) }
+  const go = (e: React.MouseEvent) => { e.preventDefault(); const el = document.getElementById('pagkos'); const l = getLenis(); if (el) l ? l.scrollTo(el, { duration: 1.6 }) : el.scrollIntoView({ behavior: 'smooth' }) }
 
   return (
     <section id="kreata" data-theme="dark" className="bg-ink text-ivory">
@@ -161,7 +162,7 @@ export default function Chapters() {
             <h2 ref={titleRef} className="font-display text-[20vw] uppercase leading-[.85] md:text-[11vw]">{active.title}</h2>
             <p ref={textRef} className="mt-3 max-w-[40ch] text-base text-ivory/85 md:text-lg">{active.text}</p>
           </div>
-          <div className="pointer-events-auto relative z-30 shrink-0"><Btn href="#paraggelia" onClick={go} variant="ivory">Παραγγελία</Btn></div>
+          <div className="pointer-events-auto relative z-30 shrink-0"><Btn href="#pagkos" onClick={go} variant="ivory">Δες τιμές</Btn></div>
         </div>
 
         {!coarse && (

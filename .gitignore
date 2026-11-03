@@ -5,3 +5,6 @@ assets/reels/*.mp4
 *.zip
 .DS_Store
 dev.log
+assets/fb/
+ref/orderoo/img/
+ref/orderoo/order.html

@@ -14,6 +14,7 @@ import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import Btn from '@/components/Btn'
 import { SHOP } from '@/lib/data'
+import { ORDEROO } from '@/lib/menu'
 import { getLenis } from '@/lib/smooth'
 import { cn } from '@/lib/cn'
 
@@ -30,10 +31,10 @@ const CLIP_A = `polygon(0 0, 100% 0, 100% ${50 - tcut + 0.4}%, 0 ${50 + tcut + 0
 const CLIP_B = `polygon(0 ${50 + tcut}%, 100% ${50 - tcut}%, 100% 100%, 0 100%)`
 
 const DOORS = [
-  { n: '01', label: 'Τα κρέατα', sub: 'Μοσχάρι, αρνί, χοιρινό, λουκάνικα', href: '#kreata', src: '/media/gen/ribs.webp' },
-  { n: '02', label: 'Το μαγαζί', sub: 'Σπάρτης & Σαλαμίνος, από το 1983', href: '#magazi', src: '/media/gen/shop-front.webp' },
+  { n: '01', label: 'Ο πάγκος', sub: '84 είδη με τιμές, παραγγελία online', href: '#pagkos', src: '/media/p/cmvtxlxlk000808l2epj2d90r.webp' },
+  { n: '02', label: 'Το μαγαζί', sub: 'Σπάρτης & Σαλαμίνος, από το 1983', href: '#magazi', src: '/media/real/front-m-sm.webp' },
   { n: '03', label: 'Ο Ιπποκράτης', sub: 'Κόβει μπροστά σου', href: '#ippokratis', src: '/media/gen/ippokratis-studio-wide.webp' },
-  { n: '04', label: 'Παραγγελία', sub: 'Τηλέφωνο ή WhatsApp, έτοιμο στην ώρα του', href: '#paraggelia', src: '/media/gen/case.webp' },
+  { n: '04', label: 'Νέα', sub: 'Γιορτές, νέα είδη, ανακοινώσεις', href: '#nea', src: '/media/real/interior-sm.webp' },
 ]
 
 export default function Hero() {
@@ -201,7 +202,7 @@ export default function Hero() {
               <div className="mt-5 flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
                 <p ref={sub} className="max-w-[34ch] text-lg leading-snug text-ivory/90 md:text-xl">Παραδοσιακό κρεοπωλείο στον Πειραιά από το 1983. Κόβουμε μπροστά σου, την ώρα που το ζητάς.</p>
                 <div ref={cta} className="flex flex-col gap-3 sm:flex-row">
-                  <Btn href="#paraggelia" onClick={go('#paraggelia')}>Παραγγελία</Btn>
+                  <Btn href={ORDEROO} target="_blank">Παράγγειλε online</Btn>
                   <Btn href={SHOP.phoneHref} variant="ivory">{SHOP.phone}</Btn>
                 </div>
               </div>

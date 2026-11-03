@@ -6,6 +6,8 @@ import MobileBar from '@/components/MobileBar'
 import Hero from '@/sections/Hero'
 import Chapters from '@/sections/Chapters'
 import Cuts from '@/sections/Cuts'
+import Catalogue from '@/sections/Catalogue'
+import News from '@/sections/News'
 import Shop from '@/sections/Shop'
 import Butcher from '@/sections/Butcher'
 import Reviews from '@/sections/Reviews'
@@ -33,9 +35,11 @@ export default function App() {
       <main className={loaded ? '' : 'invisible'}>
         <Hero />
         <Chapters />
+        <Catalogue />
         <Cuts />
         <Shop />
         <Butcher />
+        <News />
         <Reviews />
         <Order />
         <Hours />

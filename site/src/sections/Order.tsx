@@ -10,6 +10,7 @@ import { AnimatePresence, motion, useAnimationControls, useReducedMotion } from 
 import { Minus, Plus } from '@phosphor-icons/react'
 import Btn from '@/components/Btn'
 import { SHOP, STOPS } from '@/lib/data'
+import { ORDEROO } from '@/lib/menu'
 import { cn } from '@/lib/cn'
 
 const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v))
@@ -72,7 +73,8 @@ export default function Order() {
         <div className="grid gap-12 md:grid-cols-[1fr_1fr] md:gap-20">
           <div>
             <h2 className="font-display text-[clamp(3.2rem,8vw,7rem)] uppercase leading-[.9]">Παραγγελία για παραλαβή.</h2>
-            <p className="mt-4 max-w-[44ch] text-lg text-ink-2">Για το τραπέζι της Κυριακής, το Πάσχα ή τα Χριστούγεννα. Γράψε τι θέλεις και πότε περνάς, και το έχουμε έτοιμο.</p>
+            <p className="mt-4 max-w-[44ch] text-lg text-ink-2">Ο πιο γρήγορος δρόμος είναι το online καλάθι μας: διαλέγεις, πληρώνεις και περνάς σε 15 με 25 λεπτά. Για το τραπέζι της Κυριακής, το Πάσχα ή τα Χριστούγεννα, γράψε μας εδώ τι θέλεις και πότε περνάς.</p>
+            <div className="mt-8"><Btn href={ORDEROO} target="_blank">Online καλάθι</Btn></div>
             <ul className="mt-8 space-y-2 text-[15px] text-ink-2">
               <li>Παραλαβή από το κατάστημα, Σπάρτης & Σαλαμίνος 124.</li>
               <li>Οι παραγγελίες γιορτών κλείνουν λίγες μέρες πριν. Ρώτα μας νωρίς.</li>
