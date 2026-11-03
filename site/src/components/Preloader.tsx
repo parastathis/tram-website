@@ -76,7 +76,7 @@ export default function Preloader({ onDone }: { onDone: () => void }) {
             <img ref={tram} src="/media/tram-mark.png" alt="" className="absolute bottom-[1px] left-0 h-10 w-auto invert opacity-0 md:h-14" />
           </div>
         </div>
-        <div ref={sub} className="mt-8 font-mono text-[12px] text-ivory/70">Παραδοσιακό κρεοπωλείο · Πειραιάς · από το 1980</div>
+        <div ref={sub} className="mt-8 font-mono text-[12px] text-ivory/70">Παραδοσιακό κρεοπωλείο · Πειραιάς · από το 1983</div>
         <button ref={enter} type="button" onClick={open} disabled={!ready} className="btn btn-ivory mt-8 opacity-0 disabled:pointer-events-none">
           <span className="sr-only">Μπες στο μαγαζί</span><Roll text="Μπες στο μαγαζί" />
         </button>

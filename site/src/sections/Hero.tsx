@@ -31,7 +31,7 @@ const CLIP_B = `polygon(0 ${50 + tcut}%, 100% ${50 - tcut}%, 100% 100%, 0 100%)`
 
 const DOORS = [
   { n: '01', label: 'Τα κρέατα', sub: 'Μοσχάρι, αρνί, χοιρινό, λουκάνικα', href: '#kreata', src: '/media/gen/ribs.webp' },
-  { n: '02', label: 'Το μαγαζί', sub: 'Σπάρτης & Σαλαμίνος, από το 1980', href: '#magazi', src: '/media/gen/shop-front.webp' },
+  { n: '02', label: 'Το μαγαζί', sub: 'Σπάρτης & Σαλαμίνος, από το 1983', href: '#magazi', src: '/media/gen/shop-front.webp' },
   { n: '03', label: 'Ο Ιπποκράτης', sub: 'Κόβει μπροστά σου', href: '#ippokratis', src: '/media/gen/ippokratis-studio-wide.webp' },
   { n: '04', label: 'Παραγγελία', sub: 'Τηλέφωνο ή WhatsApp, έτοιμο στην ώρα του', href: '#paraggelia', src: '/media/gen/case.webp' },
 ]
@@ -199,7 +199,7 @@ export default function Hero() {
               <h1 ref={title} className="font-display text-[26vw] uppercase leading-[.82] md:text-[17vw]">Το Τραμ</h1>
               <div ref={line} className="mt-2 h-[3px] w-full origin-left bg-red" />
               <div className="mt-5 flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
-                <p ref={sub} className="max-w-[34ch] text-lg leading-snug text-ivory/90 md:text-xl">Παραδοσιακό κρεοπωλείο στον Πειραιά από το 1980. Κόβουμε μπροστά σου, την ώρα που το ζητάς.</p>
+                <p ref={sub} className="max-w-[34ch] text-lg leading-snug text-ivory/90 md:text-xl">Παραδοσιακό κρεοπωλείο στον Πειραιά από το 1983. Κόβουμε μπροστά σου, την ώρα που το ζητάς.</p>
                 <div ref={cta} className="flex flex-col gap-3 sm:flex-row">
                   <Btn href="#paraggelia" onClick={go('#paraggelia')}>Παραγγελία</Btn>
                   <Btn href={SHOP.phoneHref} variant="ivory">{SHOP.phone}</Btn>

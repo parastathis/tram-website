@@ -50,7 +50,7 @@ export default function Butcher() {
           <img src="/media/gen/ippokratis-studio.webp" alt={`${SHOP.owner}, ο κρεοπώλης του Τραμ, με τον μπαλτά`} className="block w-full" loading="lazy" onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/media/gen/ippokratis-portrait.webp' }} />
           <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-ink to-transparent" />
         </motion.div>
-        <p ref={line} className="absolute bottom-10 left-5 z-20 max-w-[30ch] font-mono text-[12px] text-ivory/80 md:left-8">{last} · κρεοπώλης · Σπάρτης & Σαλαμίνος, από το 1980</p>
+        <p ref={line} className="absolute bottom-10 left-5 z-20 max-w-[30ch] font-mono text-[12px] text-ivory/80 md:left-8">{last} · κρεοπώλης · Σπάρτης & Σαλαμίνος, από το 1983</p>
         <p className="absolute bottom-10 right-5 z-20 hidden font-display text-2xl uppercase text-ivory md:right-8 md:block">Κόβει μπροστά σου</p>
       </div>
 
@@ -61,7 +61,7 @@ export default function Butcher() {
         </figure>
         <div className="flex flex-col justify-end md:col-span-4">
           <h3 className="font-display text-[clamp(2.6rem,4.6vw,4.4rem)] uppercase leading-[.9]">Ο πάγκος είναι δικός του</h3>
-          <p className="mt-5 max-w-[40ch] text-lg leading-relaxed text-ivory/80">Από το 1980 κόβει ο ίδιος, στον ξύλινο πάγκο, και σου λέει ποιο κομμάτι θέλει η κάθε δουλειά. Τα λουκάνικα και το κοκορέτσι γίνονται στο εργαστήριο πίσω από τη βιτρίνα. Οι παραγγελίες των γιορτών γράφονται με το χέρι.</p>
+          <p className="mt-5 max-w-[40ch] text-lg leading-relaxed text-ivory/80">Δεύτερη γενιά στον πάγκο: το μαγαζί το άνοιξε ο πατέρας του το 1983 και από το 2017 το κρατά ο Ιπποκράτης. Κόβει ο ίδιος, στον ξύλινο πάγκο, και σου λέει ποιο κομμάτι θέλει η κάθε δουλειά. Τα λουκάνικα και το κοκορέτσι γίνονται στο εργαστήριο πίσω από τη βιτρίνα. Οι παραγγελίες των γιορτών γράφονται με το χέρι.</p>
         </div>
       </div>
     </section>

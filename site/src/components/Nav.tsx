@@ -154,7 +154,7 @@ export default function Nav({ dark }: { dark: boolean }) {
               <a href={SHOP.phoneHref}>{SHOP.phone}</a>
               <a href={SHOP.mobileHref}>{SHOP.mobile}</a>
             </div>
-            <span>{SHOP.address}, Κοπή, Πειραιάς · από το 1980</span>
+            <span>{SHOP.address}, Κοπή, Πειραιάς · από το 1983</span>
           </div>
         </div>
       </nav>

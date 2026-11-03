@@ -16,7 +16,7 @@ export default function Footer() {
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-[1.2fr_2fr]">
           <div className="flex max-w-sm flex-col gap-5">
             <a href="#hero" className="flex items-center gap-3 font-display text-2xl uppercase"><img src="/media/tram-mark.png" alt="" className="h-8 w-auto" />Το Τραμ</a>
-            <p className="text-sm leading-6 text-ink-2">Παραδοσιακό κρεοπωλείο στον Πειραιά από το 1980. Ελληνικό κρέας με ετικέτα, παρασκευές του εργαστηρίου, παραγγελίες γιορτών.</p>
+            <p className="text-sm leading-6 text-ink-2">Παραδοσιακό κρεοπωλείο στον Πειραιά από το 1983. Εξυπηρετούμε όλο τον Πειραιά. Ελληνικό κρέας με ετικέτα, παρασκευές του εργαστηρίου, παραγγελίες γιορτών.</p>
           </div>
           <nav aria-label="Υποσέλιδο" className="grid grid-cols-2 gap-8 sm:grid-cols-3">
             <div>
