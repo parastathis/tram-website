@@ -19,7 +19,7 @@ SHOTS = [
     ('tramgen-1.jpg', 'interior-m', 9 / 16, .70),
     ('tramgen-4.jpg', 'counter', None, .5),      # IMG_5819 counter with the tram mural
     ('tramgen-3.jpg', 'bag', 4 / 5, .52),        # IMG_5813 the shop bag
-    ('tramgen-2.jpg', 'clock', 4 / 5, .25),      # IMG_5817 the clock
+    ('tramgen-2.jpg', 'clock', 4 / 5, .5),       # IMG_5817 the clock
     ('tramgen-0.jpg', 'farm-box', None, .5),     # IMG_5811 Farma Elassonas box
     ('tramgen-0.jpg', 'farm-box-t', 4 / 5, .26),
     ('tramgen-5.jpg', 'workshop', 4 / 5, .55),   # IMG_5810 the workshop

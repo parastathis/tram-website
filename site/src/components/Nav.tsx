@@ -8,7 +8,7 @@
  */
 import gsap from 'gsap'
 import { useEffect, useRef, useState } from 'react'
-import { Phone, FacebookLogo } from '@phosphor-icons/react'
+import { Phone, FacebookLogo, ArrowRight, WhatsappLogo } from '@phosphor-icons/react'
 import { SHOP } from '@/lib/data'
 import { getLenis } from '@/lib/smooth'
 import { cn } from '@/lib/cn'
@@ -141,15 +141,22 @@ export default function Nav({ dark }: { dark: boolean }) {
       <nav ref={overlay} style={{ clipPath: CLIP.closedInitial }} className={cn('fixed inset-0 z-[60] overflow-y-auto bg-red text-ivory', open ? 'pointer-events-auto' : 'pointer-events-none')} aria-hidden={!open} aria-label="Κύριο μενού">
         <div ref={wrap} className="flex min-h-[100svh] w-full flex-col justify-between gap-8 px-5 pb-8 pt-20 md:px-12 md:pb-10 md:pt-24">
           <div className="flex items-start justify-between gap-10 max-[1025px]:flex-col">
-            <div className="flex flex-col">
+            <div className="flex flex-col max-[1025px]:w-full">
+              {/* phones: the order line first, as a block you cannot miss */}
+              <a href="/paraggelia" ref={(el) => { items.current[LINKS.length] = el }} onClick={(e) => { e.preventDefault(); closeMenu(); setTimeout(() => goTo('order'), 700) }} style={{ opacity: 0 }}
+                className="mb-5 hidden items-center justify-between bg-ivory px-5 py-4 text-red no-underline max-[1025px]:flex">
+                <span><span className="block font-display text-[2.1rem] uppercase leading-none">Παράγγειλε τώρα</span><span className="mt-1 block font-mono text-[11.5px] text-ink/70">Όλος ο πάγκος με τιμές, σε δύο βήματα</span></span>
+                <span className="flex h-12 w-12 shrink-0 items-center justify-center bg-red text-ivory"><ArrowRight size={22} weight="bold" /></span>
+              </a>
               {LINKS.map((l, i) => (
-                <div key={l.href} ref={(el) => { items.current[i] = el }} className={cn('flex items-baseline gap-4 py-[0.06em] font-display text-[min(7.2vw,9vh)] uppercase leading-none max-[1025px]:text-[min(12.5vw,7.4vh)]', active === l.href ? 'text-ivory' : 'text-ivory/90')} style={{ opacity: 0 }}>
-                  <span className="w-[1.6em] shrink-0 font-mono text-[11px] text-ivory/60">{String(i + 1).padStart(2, '0')}{active === l.href ? ' ●' : ''}</span>
-                  <LinkHover label={l.label} href={l.href} onClick={l.href.startsWith('/') ? (e) => { e.preventDefault(); closeMenu(); setTimeout(() => goTo('order'), 700) } : go(l.href)} />
+                <div key={l.href} ref={(el) => { items.current[i] = el }} className={cn('flex items-baseline gap-4 py-[0.06em] font-display text-[min(7.2vw,9vh)] uppercase leading-none max-[1025px]:items-center max-[1025px]:justify-between max-[1025px]:border-b max-[1025px]:border-ivory/20 max-[1025px]:py-3 max-[1025px]:text-[min(9.6vw,5.6vh)]', active === l.href ? 'text-ivory' : 'text-ivory/90', l.href.startsWith('/') && 'max-[1025px]:hidden')} style={{ opacity: 0 }}>
+                  <span className="w-[1.6em] shrink-0 font-mono text-[11px] text-ivory/60 max-[1025px]:hidden">{String(i + 1).padStart(2, '0')}{active === l.href ? ' ●' : ''}</span>
+                  <span className="flex items-center gap-3">{active === l.href && <span aria-hidden className="hidden h-2.5 w-2.5 bg-ivory max-[1025px]:block" />}<LinkHover label={l.label} href={l.href} onClick={l.href.startsWith('/') ? (e) => { e.preventDefault(); closeMenu(); setTimeout(() => goTo('order'), 700) } : go(l.href)} /></span>
+                  <ArrowRight aria-hidden size={20} weight="bold" className="hidden text-ivory/60 max-[1025px]:block" />
                 </div>
               ))}
             </div>
-            <div className="flex items-end gap-6 max-[1025px]:w-full max-[1025px]:flex-row">
+            <div className="flex items-end gap-6 max-[1025px]:hidden">
               {['/media/gen/counter-sm.webp', '/media/gen/front-sm.webp'].map((src, i) => (
                 <div key={src} ref={(el) => { imgs.current[i] = el }} className="relative h-[16vw] w-[22vw] overflow-hidden max-[1025px]:h-[28vw] max-[1025px]:w-1/2" style={{ opacity: 0 }}>
                   <img src={src} alt="" className="absolute inset-0 h-full w-full object-cover" />
@@ -158,7 +165,11 @@ export default function Nav({ dark }: { dark: boolean }) {
             </div>
           </div>
           <div ref={foot} className="flex flex-wrap items-end justify-between gap-4 font-mono text-[12px]" style={{ opacity: 0 }}>
-            <div className="flex items-center gap-6">
+            <div className="hidden w-full grid-cols-2 gap-2 max-[1025px]:grid">
+              <a href={SHOP.phoneHref} className="flex h-14 items-center justify-center gap-2 bg-ink font-display text-xl uppercase tracking-wide text-ivory no-underline"><Phone size={18} weight="bold" /> Κάλεσε</a>
+              <a href={SHOP.whatsapp} target="_blank" rel="noopener" className="flex h-14 items-center justify-center gap-2 bg-green font-display text-xl uppercase tracking-wide text-ivory no-underline"><WhatsappLogo size={20} weight="bold" /> WhatsApp</a>
+            </div>
+            <div className="flex items-center gap-6 max-[1025px]:hidden">
               <a href={SHOP.facebook} target="_blank" rel="noopener" className="inline-flex items-center gap-2"><FacebookLogo size={18} weight="bold" /> Facebook</a>
               <a href={SHOP.phoneHref}>{SHOP.phone}</a>
               <a href={SHOP.mobileHref}>{SHOP.mobile}</a>

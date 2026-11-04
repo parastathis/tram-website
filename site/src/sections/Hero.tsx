@@ -13,12 +13,13 @@
  */
 import { useEffect, useRef, useState } from 'react'
 import gsap from 'gsap'
+import { motion } from 'motion/react'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import Btn from '@/components/Btn'
 import { SHOP } from '@/lib/data'
 import { getLenis } from '@/lib/smooth'
 import { link, ORDER_PATH } from '@/lib/route'
-import LinePicker from '@/components/LinePicker'
+import LinePicker, { type Print } from '@/components/LinePicker'
 import { goTo } from '@/lib/route'
 import { cn } from '@/lib/cn'
 
@@ -27,8 +28,7 @@ gsap.registerPlugin(ScrollTrigger)
 const STRIPS = 12
 const LAST = '/media/frames/f_0095.webp'
 const TFRAMES = 94
-const IS_PHONE = typeof window !== 'undefined' && window.matchMedia('(max-width: 767px)').matches
-const tframe = (i: number) => `/media/${IS_PHONE ? 'tram-frames-m' : 'tram-frames'}/t_${String(i + 1).padStart(4, '0')}.webp`
+const tframe = (i: number) => `/media/tram-frames-hd/t_${String(i + 1).padStart(4, '0')}.webp`
 const CUT = 14
 const tcut = Math.tan((CUT * Math.PI) / 180) * 50
 const CLIP_A = `polygon(0 0, 100% 0, 100% ${50 - tcut + 0.4}%, 0 ${50 + tcut + 0.4}%)`
@@ -53,7 +53,6 @@ export default function Hero() {
   const blobs = useRef<(Blob | null)[]>([])
   const frames = useRef<Map<number, ImageBitmap | HTMLImageElement>>(new Map())
   const decoding = useRef<Set<number>>(new Set())
-  const decodeW = useRef(1280)
   const flash = useRef<HTMLDivElement>(null)
   const hub = useRef<HTMLDivElement>(null)
   const doors = useRef<(HTMLAnchorElement | null)[]>([])
@@ -65,10 +64,10 @@ export default function Hero() {
 
   // fetch the tram frames once as compressed blobs; decoding happens on demand (see want())
   useEffect(() => {
-    if (reduced) return
+    if (reduced || phone) return
     let alive = true
     const one = async (i: number) => {
-      try { const r = await fetch(tframe(i)); const bl = await r.blob(); if (alive) blobs.current[i] = bl } catch { /* the nearest frame stands in */ }
+      try { const r = await fetch(tframe(i)); const bl = await r.blob(); if (alive) { blobs.current[i] = bl; if (i < 26) want(i, () => {}) } } catch { /* the nearest frame stands in */ }
     }
     const run = async () => {
       await Promise.all([one(0), one(TFRAMES - 1)])
@@ -83,7 +82,7 @@ export default function Hero() {
     return () => { alive = false; window.clearTimeout(t); window.removeEventListener('tram:enter', start); cache.forEach((f) => { if ('close' in f) f.close() }); cache.clear() }
   }, [reduced, phone])
 
-  /** decode frame i (scaled to the canvas) and keep at most 12 decoded, the rest stay compressed */
+  /** decode frame i (scaled to the canvas) and keep at most 44 decoded, the rest stay compressed */
   const want = (i: number, redraw: () => void) => {
     const bl = blobs.current[i]
     if (!bl || frames.current.has(i) || decoding.current.has(i)) return
@@ -92,16 +91,16 @@ export default function Hero() {
       decoding.current.delete(i)
       const m = frames.current
       m.set(i, f)
-      if (m.size > 12) { let far = -1, d = -1; m.forEach((_, k) => { const dd = Math.abs(k - i); if (dd > d) { d = dd; far = k } }); const f2 = m.get(far); if (f2 && 'close' in f2) f2.close(); m.delete(far) }
+      if (m.size > 44) { let far = -1, d = -1; m.forEach((_, k) => { const dd = Math.abs(k - i); if (dd > d) { d = dd; far = k } }); const f2 = m.get(far); if (f2 && 'close' in f2) f2.close(); m.delete(far) }
       redraw()
     }
-    if ('createImageBitmap' in window) createImageBitmap(bl, { resizeWidth: decodeW.current, resizeQuality: 'medium' }).then(done, () => decoding.current.delete(i))
+    if ('createImageBitmap' in window) createImageBitmap(bl).then(done, () => decoding.current.delete(i))
     else { const im = new Image(); im.onload = () => done(im); im.onerror = () => decoding.current.delete(i); im.src = URL.createObjectURL(bl) }
   }
 
   // entry: strips off the film, the film plays through once and holds the landed blade
   useEffect(() => {
-    if (reduced) return
+    if (reduced || phone) return
     const ctx = gsap.context(() => {
       const s = strips.current.filter(Boolean)
       const tl = gsap.timeline({ defaults: { ease: 'expo.out' }, paused: true })
@@ -120,22 +119,23 @@ export default function Hero() {
 
   // scroll: the cut, the tram ride, the crash, the hub (desktop and phone alike)
   useEffect(() => {
-    if (reduced) return
+    if (reduced || phone) return
     ScrollTrigger.config({ ignoreMobileResize: true })
     const ctx = gsap.context(() => {
-      let last = -1
+      let last = -1, lastWant = 0
       const fit = () => {
         const c = tram.current; if (!c) return
         const dpr = Math.min(window.devicePixelRatio || 1, 1.25)
         c.width = Math.round(c.clientWidth * dpr); c.height = Math.round(c.clientHeight * dpr)
-        decodeW.current = Math.min(IS_PHONE ? 1280 : 1920, Math.max(640, Math.round(Math.max(c.width, c.height * 16 / 9))))
         last = -1
       }
       const draw = (p: number) => {
         const c = tram.current; if (!c) return
         const want_ = Math.min(TFRAMES - 1, Math.max(0, Math.round(p * (TFRAMES - 1))))
         const redraw = () => { last = -1; draw(ride.p) }
-        for (let k = -2; k <= 3; k++) want(Math.min(TFRAMES - 1, Math.max(0, want_ + k)), redraw)
+        // decode ahead in the direction of travel, a little behind
+        const dir = want_ >= lastWant ? 1 : -1; lastWant = want_
+        for (let k = -4; k <= 22; k++) want(Math.min(TFRAMES - 1, Math.max(0, want_ + k * dir)), redraw)
         let idx = want_, best: ImageBitmap | HTMLImageElement | undefined
         for (let k = 0; k < TFRAMES && !best; k++) { best = frames.current.get(want_ - k) ?? frames.current.get(want_ + k); if (best) idx = frames.current.has(want_ - k) ? want_ - k : want_ + k }
         const f = best
@@ -150,7 +150,7 @@ export default function Hero() {
       fit()
       window.addEventListener('resize', fit)
       const ride = { p: 0 }
-      const tl = gsap.timeline({ scrollTrigger: { trigger: section.current, start: 'top top', end: 'bottom bottom', scrub: 0.9, invalidateOnRefresh: true, onRefresh: fit, onLeaveBack: () => { const v = video.current; if (v) { v.currentTime = 0; v.play().catch(() => {}) } } } })
+      const tl = gsap.timeline({ scrollTrigger: { trigger: section.current, start: 'top top', end: 'bottom bottom', scrub: 0.45, invalidateOnRefresh: true, onRefresh: fit, onLeaveBack: () => { const v = video.current; if (v) { v.currentTime = 0; v.play().catch(() => {}) } } } })
       tl.to(copy.current, { opacity: 0, ease: 'none', duration: 0.08 }, 0)
       tl.to(hint.current, { opacity: 0, ease: 'none', duration: 0.04 }, 0)
       tl.set([halfA.current, halfB.current], { autoAlpha: 1 }, 0.04)
@@ -182,6 +182,14 @@ export default function Hero() {
     const l = getLenis()
     if (el) l ? l.scrollTo(el, { duration: 1.6 }) : el.scrollIntoView({ behavior: 'smooth' })
   }
+  const prints = [
+    { image: '/media/gen/counter-sm.webp', note: 'παράγγειλε τώρα', title: 'Παράγγειλε τώρα', caption: 'Όλος ο πάγκος με τιμές, σε δύο βήματα. Πληρώνεις όταν παραλάβεις.', cta: 'Στον πάγκο', alt: 'Ο πάγκος του καταστήματος γεμάτος κρέατα', go: () => goTo('order') },
+    { image: '/media/gen/front-m.webp', note: 'το μαγαζί', title: 'Το μαγαζί', caption: 'Τα κρέατα, ο Ιπποκράτης, από το 1983 στη Σπάρτης & Σαλαμίνος.', cta: 'Μπες μέσα', alt: 'Η πρόσοψη του Τραμ', go: () => { const el = document.getElementById('kreata'); const l = getLenis(); if (el) l ? l.scrollTo(el, { duration: 1.4 }) : el.scrollIntoView({ behavior: 'smooth' }) } },
+  ]
+
+  // phones: a still hero (no film, no tram) and the first scroll down lands on the two prints
+  if (phone && !reduced) return <PhoneHero prints={prints} />
+
   const w = 100 / STRIPS
 
   return (
@@ -237,14 +245,58 @@ export default function Hero() {
             <p className="hidden font-mono text-[12px] text-ivory/60 md:block">{SHOP.address} · Κοπή, Πειραιάς</p>
           </div>
           <div ref={(el) => { doors.current[0] = el as unknown as HTMLAnchorElement }} className="relative min-h-0 flex-1">
-            <LinePicker running={board || reduced} prints={[
-              { image: '/media/gen/counter-sm.webp', note: 'παράγγειλε τώρα', title: 'Παράγγειλε τώρα', caption: 'Όλος ο πάγκος με τιμές, σε δύο βήματα. Πληρώνεις όταν παραλάβεις.', cta: 'Στον πάγκο', alt: 'Ο πάγκος του καταστήματος γεμάτος κρέατα', go: () => goTo('order') },
-              { image: '/media/gen/front-m.webp', note: 'το μαγαζί', title: 'Το μαγαζί', caption: 'Τα κρέατα, ο Ιπποκράτης, από το 1983 στη Σπάρτης & Σαλαμίνος.', cta: 'Μπες μέσα', alt: 'Η πρόσοψη του Τραμ', go: () => { const el = document.getElementById('kreata'); const l = getLenis(); if (el) l ? l.scrollTo(el, { duration: 1.4 }) : el.scrollIntoView({ behavior: 'smooth' }) } },
-            ]} />
+            <LinePicker running={board || reduced} prints={prints} />
           </div>
         </div>
         {/* the flash of the crash, above everything */}
         {!reduced && <div ref={flash} className="pointer-events-none absolute inset-0 z-30 opacity-0" style={{ background: 'radial-gradient(circle at 50% 50%, #FFF3D6 0%, #F2D9A6 45%, #EFEAE0 100%)' }} />}
+      </div>
+    </section>
+  )
+}
+
+function PhoneHero({ prints }: { prints: Print[] }) {
+  const cards = useRef<HTMLDivElement>(null)
+  const [seen, setSeen] = useState(false)
+  useEffect(() => {
+    // one downward move from the hero carries you to the prints; scrolling back up is left alone
+    let lastY = window.scrollY, busy = false
+    const onScroll = () => {
+      const y = window.scrollY, el = cards.current
+      if (!el) return
+      const top = el.getBoundingClientRect().top + y
+      if (!busy && y > lastY && y > 8 && y < top - 8) {
+        busy = true
+        const l = getLenis(); if (l) l.scrollTo(top, { duration: 0.9 }); else window.scrollTo({ top, behavior: 'smooth' })
+        window.setTimeout(() => { busy = false }, 900)
+      }
+      lastY = y
+    }
+    window.addEventListener('scroll', onScroll, { passive: true })
+    const io = new IntersectionObserver(([e]) => { if (e.isIntersecting) setSeen(true) }, { threshold: 0.4 })
+    if (cards.current) io.observe(cards.current)
+    return () => { window.removeEventListener('scroll', onScroll); io.disconnect() }
+  }, [])
+  return (
+    <section id="hero" data-theme="dark" className="relative bg-ink text-ivory" aria-label="Παραδοσιακό Κρεοπωλείο Το Τραμ, Πειραιάς">
+      <div className="relative h-[100svh] overflow-hidden">
+        <motion.img src={LAST} alt="Ο μπαλτάς στον ξύλινο πάγκο του Τραμ" className="absolute inset-0 h-full w-full object-cover" initial={{ scale: 1.12, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ duration: 1.4, ease: [0.22, 1, 0.36, 1] }} />
+        <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-ink/80 via-ink/10 to-ink/40" />
+        <div className="absolute inset-x-5 bottom-8">
+          <motion.h1 className="font-display text-[26vw] uppercase leading-[.82]" initial={{ y: 40, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.9, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}>Το Τραμ</motion.h1>
+          <motion.div className="mt-2 h-[3px] w-full origin-left bg-red" initial={{ scaleX: 0 }} animate={{ scaleX: 1 }} transition={{ duration: 0.9, delay: 0.55, ease: [0.76, 0, 0.24, 1] }} />
+          <motion.div initial={{ y: 16, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.7, delay: 0.8 }}>
+            <p className="mt-5 max-w-[34ch] text-lg leading-snug text-ivory/90">Παραδοσιακό κρεοπωλείο στον Πειραιά από το 1983. Κόβουμε μπροστά σου, την ώρα που το ζητάς.</p>
+            <div className="mt-5 flex flex-col gap-3">
+              <Btn href={ORDER_PATH} onClick={link('order')}>Παράγγειλε τώρα</Btn>
+              <Btn href={SHOP.phoneHref} variant="ivory">{SHOP.phone}</Btn>
+            </div>
+          </motion.div>
+        </div>
+      </div>
+      <div ref={cards} className="relative flex h-[100svh] flex-col bg-ink">
+        <p className="px-5 pt-20 font-display text-2xl uppercase tracking-wide text-ivory">Τέρμα. <span className="text-ivory/55">Πού πας;</span></p>
+        <div className="relative min-h-0 flex-1"><LinePicker running={seen} prints={prints} /></div>
       </div>
     </section>
   )

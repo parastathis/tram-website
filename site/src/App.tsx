@@ -9,6 +9,7 @@ import Hero from '@/sections/Hero'
 import Chapters from '@/sections/Chapters'
 import Cuts from '@/sections/Cuts'
 import Showcase from '@/sections/Showcase'
+import Greek from '@/sections/Greek'
 import OrderApp from '@/pages/OrderApp'
 import { useRoute } from '@/lib/route'
 import News from '@/sections/News'
@@ -45,6 +46,7 @@ export default function App() {
         <Hero />
         <Chapters />
         <Showcase />
+        <Greek />
         <Cuts />
         <Shop />
         <Butcher />

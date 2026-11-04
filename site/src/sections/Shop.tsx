@@ -3,20 +3,13 @@
  * Drive), all passed through one grade (scripts/grade.py: white balance, levels, a soft curve, a
  * little warmth) and one set of crops, so they read as one shoot. Nothing painted in or removed.
  * Motion: the walk-in opens with a slit (clip-path, like a tram door), then the photos rise in a
- * staggered grid; the traceability label is set as a typographic document with block-wipe lines
+ * staggered grid (the traceability label now has its own section, Greek.tsx)
  * (21st.dev "Text Animation" by ajith66310, simplified to clip-path).
  */
 import { useRef } from 'react'
 import { motion, useInView, useScroll, useTransform } from 'motion/react'
 import { SHOP } from '@/lib/data'
 
-const ROWS = [
-  ['Είδος ζώου', 'Βόειο, νεαρό ζώο'],
-  ['Χώρα γέννησης', 'Ελλάδα'],
-  ['Εκτροφή', 'Φάρμα Ελασσόνας'],
-  ['Ταξινόμηση', 'AU2+'],
-  ['Κοπή', 'Σαλαμίνος 124, Πειραιάς'],
-]
 
 type Tile = { src: string; alt: string; cap: string; span: string; ratio: string; pos?: string }
 const R = (n: string) => `/media/real/${n}.webp`
@@ -27,9 +20,7 @@ const TILES: Tile[] = [
   { src: G('bag'), alt: 'Η σακούλα του καταστήματος με το κόκκινο τραμ', cap: 'Η σακούλα με το βαγόνι', span: 'md:col-span-5', ratio: 'aspect-[4/5]' },
   { src: G('clock'), alt: 'Το ρολόι του καταστήματος με το τραμ', cap: 'Το ρολόι του μαγαζιού', span: 'md:col-span-4', ratio: 'aspect-[4/5]' },
   { src: R('boats'), alt: 'Καΐκι στο ράφι πάνω από τη βιτρίνα', cap: 'Τα καΐκια στο ράφι', span: 'md:col-span-4', ratio: 'aspect-[4/5]' },
-  { src: R('label-hand'), alt: 'Μοσχάρι με την ετικέτα ιχνηλασιμότητας', cap: 'Κάθε κομμάτι με την ετικέτα του', span: 'md:col-span-4', ratio: 'aspect-[4/5]' },
-  { src: G('workshop'), alt: 'Το εργαστήριο με τον κορμό, τη μηχανή του κιμά και τα λουκάνικα', cap: 'Το εργαστήριο, εδώ γίνονται τα λουκάνικα', span: 'md:col-span-5', ratio: 'aspect-[4/5]' },
-  { src: G('farm-box'), alt: 'Κιβώτιο της Φάρμας Ελασσόνας', cap: 'Από τη Φάρμα Ελασσόνας', span: 'md:col-span-7', ratio: 'aspect-[4/5] md:aspect-auto md:min-h-full', pos: 'object-[26%_50%] md:object-center' },
+  { src: G('workshop'), alt: 'Το εργαστήριο με τον κορμό, τη μηχανή του κιμά και τα λουκάνικα', cap: 'Το εργαστήριο, εδώ γίνονται τα λουκάνικα', span: 'md:col-span-4', ratio: 'aspect-[4/5]' },
 ]
 
 function Frame({ t, i }: { t: Tile; i: number }) {
@@ -47,9 +38,7 @@ function Frame({ t, i }: { t: Tile; i: number }) {
 
 export default function Shop() {
   const film = useRef<HTMLDivElement>(null)
-  const label = useRef<HTMLDivElement>(null)
   const open = useInView(film, { once: true, margin: '-20% 0px' })
-  const show = useInView(label, { once: true, margin: '-20% 0px -20% 0px' })
   const { scrollYProgress } = useScroll({ target: film, offset: ['start end', 'end start'] })
   const y = useTransform(scrollYProgress, [0, 1], ['-6%', '6%'])
   const scale = useTransform(scrollYProgress, [0, 1], [1.18, 1])
@@ -79,30 +68,6 @@ export default function Shop() {
         {TILES.map((t, i) => <Frame key={t.src} t={t} i={i} />)}
       </div>
 
-      {/* the label */}
-      <div className="mx-auto grid max-w-[1440px] gap-12 px-5 py-24 md:grid-cols-12 md:px-8 md:py-32">
-        <div className="md:col-span-5">
-          <h3 className="font-display text-[clamp(2.8rem,6.5vw,5.6rem)] uppercase leading-[.9]">Κρέας με ονοματεπώνυμο</h3>
-          <p className="mt-5 max-w-[42ch] text-lg text-ink-2">Κάθε μοσχάρι μπαίνει στο μαγαζί με την ετικέτα του: πού γεννήθηκε, πού μεγάλωσε, τι κατηγορία είναι. Η ετικέτα μένει πάνω στο κρέας μέχρι να κοπεί. Το AU2+ είναι το κρέας που θέλεις για μπριζόλα.</p>
-        </div>
-        <div ref={label} className="md:col-span-6 md:col-start-7">
-          <div className="border-[3px] border-label bg-ivory-2 p-6 md:p-8">
-            <div className="flex items-center justify-between border-b-2 border-label pb-3 font-mono text-[12px] font-semibold text-label">
-              <span>Ελληνικό βόειο · νεαρό ζώο</span><span>GR</span>
-            </div>
-            <dl className="mt-4">
-              {ROWS.map(([k, v], i) => (
-                <div key={k} className="relative grid grid-cols-[1fr_1.4fr] gap-4 border-b border-ink/15 py-3 font-mono text-[14px]">
-                  <motion.div aria-hidden className="absolute inset-0 bg-label" initial={{ scaleX: 0 }} animate={show ? { scaleX: [0, 1, 1, 0] } : { scaleX: 0 }} transition={{ duration: 1.2, times: [0, 0.4, 0.55, 1], delay: i * 0.09, ease: [0.76, 0, 0.24, 1] }} style={{ transformOrigin: show ? 'left' : 'right' }} />
-                  <motion.dt className="relative" initial={{ opacity: 0 }} animate={show ? { opacity: 1 } : {}} transition={{ delay: i * 0.09 + 0.5, duration: 0.01 }}>{k}</motion.dt>
-                  <motion.dd className="relative font-semibold" initial={{ opacity: 0 }} animate={show ? { opacity: 1 } : {}} transition={{ delay: i * 0.09 + 0.5, duration: 0.01 }}>{v}</motion.dd>
-                </div>
-              ))}
-            </dl>
-            <motion.div className="mt-5 inline-block border-2 border-green px-3 py-1 font-display text-xl uppercase text-green" initial={{ opacity: 0, rotate: -6, scale: 1.3 }} animate={show ? { opacity: 1, rotate: -3, scale: 1 } : {}} transition={{ delay: 1.1, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}>Κόπηκε σήμερα</motion.div>
-          </div>
-        </div>
-      </div>
     </section>
   )
 }
