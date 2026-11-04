@@ -20,6 +20,7 @@ import { SHOP } from '@/lib/data'
 import { getLenis } from '@/lib/smooth'
 import { link, ORDER_PATH } from '@/lib/route'
 import LinePicker, { type Print } from '@/components/LinePicker'
+import { ArrowRight } from '@phosphor-icons/react'
 import { goTo } from '@/lib/route'
 import { cn } from '@/lib/cn'
 
@@ -302,9 +303,23 @@ function PhoneHero({ prints }: { prints: Print[] }) {
           </motion.div>
         </div>
       </div>
-      <div ref={cards} className="relative flex h-[100svh] flex-col bg-ink">
-        <p className="px-5 pt-24 font-display text-3xl uppercase tracking-wide text-ivory">Τέρμα. <span className="text-ivory/55">Πού πας;</span></p>
-        <div className="relative min-h-0 flex-1"><LinePicker running={seen} prints={prints} /></div>
+      {/* the two ways on, as two big tiles: no string, no physics, nothing running in the background */}
+      <div ref={cards} className="relative flex h-[100svh] flex-col gap-3 bg-ink px-5 pb-24 pt-20">
+        <p className="font-display text-3xl uppercase tracking-wide text-ivory">Τέρμα. <span className="text-ivory/55">Πού πας;</span></p>
+        {prints.map((p, i) => (
+          <motion.button key={p.title} type="button" onClick={p.go} className="group relative min-h-0 flex-1 overflow-hidden border-2 border-ivory/15 text-left active:scale-[.985] transition-transform"
+            initial={{ opacity: 0, y: 28 }} animate={seen ? { opacity: 1, y: 0 } : {}} transition={{ duration: 0.6, delay: i * 0.12, ease: [0.22, 1, 0.36, 1] }}>
+            <img src={p.image} alt={p.alt} loading="lazy" className="absolute inset-0 h-full w-full object-cover" />
+            <span aria-hidden className="absolute inset-0 bg-gradient-to-t from-ink/90 via-ink/30 to-transparent" />
+            <span className="absolute inset-x-4 bottom-4 flex items-end justify-between gap-3">
+              <span className="min-w-0">
+                <span className="block font-display text-[2.6rem] uppercase leading-[.9] text-ivory">{p.title}</span>
+                <span className="mt-1 block max-w-[30ch] text-[15px] leading-snug text-ivory/80">{p.caption}</span>
+              </span>
+              <span className={`grid h-12 w-12 shrink-0 place-items-center ${i === 0 ? 'bg-red' : 'bg-ivory text-ink'}`}><ArrowRight size={22} weight="bold" /></span>
+            </span>
+          </motion.button>
+        ))}
       </div>
     </section>
   )
