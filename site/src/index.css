@@ -54,3 +54,8 @@ img { max-width: 100%; }
   *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; scroll-behavior: auto !important; }
 }
 @keyframes plIn { from { transform: translateY(40%); opacity: 0 } to { transform: none; opacity: 1 } }
+
+/* The cleaver pointer (components/CleaverCursor.tsx): the system cursor is hidden on mouse devices,
+   and with reduced motion the same cleaver is a plain CSS cursor. */
+html.cleaver-live, html.cleaver-live * { cursor: none !important; }
+html.cleaver-static, html.cleaver-static * { cursor: url('/media/cleaver-cursor.svg') 3 34, auto !important; }

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { initSmooth } from '@/lib/smooth'
 import Nav from '@/components/Nav'
 import Preloader from '@/components/Preloader'
+import CleaverCursor from '@/components/CleaverCursor'
 import MobileBar from '@/components/MobileBar'
 import ProductSheet from '@/components/ProductSheet'
 import CartDrawer from '@/components/CartDrawer'
@@ -58,6 +59,7 @@ export default function App() {
       )}
       <Footer />
       {route === 'home' && <MobileBar />}
+      <CleaverCursor />
       <ProductSheet />
       <CartDrawer />
     </>

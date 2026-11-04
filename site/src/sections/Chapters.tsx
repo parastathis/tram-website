@@ -146,7 +146,7 @@ export default function Chapters() {
         <div aria-hidden className="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink/80 via-ink/10 to-ink/20" />
 
         {total > 1 && (
-          <div className="absolute inset-0 z-20" style={{ cursor: coarse ? 'pointer' : 'none' }} onClick={(e) => { if (animating.current) return; const r = e.currentTarget.getBoundingClientRect(); e.clientX < r.left + r.width / 2 ? prev() : next() }} aria-hidden />
+          <div className="absolute inset-0 z-20" data-cursor-left="Προηγούμενο" data-cursor-right="Επόμενο" style={{ cursor: coarse ? 'pointer' : undefined }} onClick={(e) => { if (animating.current) return; const r = e.currentTarget.getBoundingClientRect(); e.clientX < r.left + r.width / 2 ? prev() : next() }} aria-hidden />
         )}
 
         <div className="pointer-events-none absolute inset-x-5 top-24 z-10 h-px md:inset-x-8" style={{ backgroundColor: 'rgba(243,241,236,.25)' }}>
@@ -165,11 +165,6 @@ export default function Chapters() {
           <div className="pointer-events-auto relative z-30 shrink-0"><Btn href="#pagkos" onClick={go} variant="ivory">Δες τιμές</Btn></div>
         </div>
 
-        {!coarse && (
-          <div ref={cursor} className="pointer-events-none fixed left-0 top-0 z-[100]">
-            <div className="flex h-16 w-16 items-center justify-center bg-red"><div className="relative h-8 w-8"><span ref={l1} className="absolute left-1/2 top-1/2 h-0.5 w-4 bg-ivory" /><span ref={l2} className="absolute left-1/2 top-1/2 h-0.5 w-4 bg-ivory" /></div></div>
-          </div>
-        )}
       </div>
     </section>
   )
