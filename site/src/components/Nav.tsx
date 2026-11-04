@@ -13,6 +13,8 @@ import { SHOP } from '@/lib/data'
 import { getLenis } from '@/lib/smooth'
 import { cn } from '@/lib/cn'
 import CartButton from '@/components/CartButton'
+import LineSwitch from '@/components/LineSwitch'
+import { goTo, useRoute } from '@/lib/route'
 
 export const LINKS = [
   { label: 'Τα κρέατα', href: '#kreata' },
@@ -21,7 +23,7 @@ export const LINKS = [
   { label: 'Το μαγαζί', href: '#magazi' },
   { label: 'Ο Ιπποκράτης', href: '#ippokratis' },
   { label: 'Νέα', href: '#nea' },
-  { label: 'Παραγγελία', href: '#paraggelia' },
+  { label: 'Παράγγειλε τώρα', href: '/paraggelia' },
   { label: 'Ώρες & πού', href: '#ores' },
 ]
 
@@ -43,6 +45,7 @@ function LinkHover({ label, href, onClick }: { label: string; href: string; onCl
 
 export default function Nav({ dark }: { dark: boolean }) {
   const [open, setOpen] = useState(false)
+  const route = useRoute()
   const [active, setActive] = useState('')
   const overlay = useRef<HTMLElement>(null)
   const wrap = useRef<HTMLDivElement>(null)
@@ -108,6 +111,7 @@ export default function Nav({ dark }: { dark: boolean }) {
   const go = (href: string) => (e: React.MouseEvent) => {
     e.preventDefault()
     if (open) closeMenu()
+    if (route === 'order') { setTimeout(() => goTo('home', href === '#hero' ? '' : href), open ? 700 : 0); return }
     const el = document.querySelector<HTMLElement>(href)
     if (!el) return
     const l = getLenis()
@@ -117,11 +121,12 @@ export default function Nav({ dark }: { dark: boolean }) {
 
   return (
     <div ref={root}>
-      <header className="fixed inset-x-0 top-0 z-[70] flex h-16 items-center justify-between px-5 md:h-20 md:px-8" style={{ color }}>
+      <header className={cn('fixed inset-x-0 top-0 z-[70] flex h-16 items-center justify-between px-5 transition-colors duration-300 md:h-20 md:px-8', route === 'order' && !open && 'border-b border-ink/15 bg-ivory')} style={{ color }}>
         <a href="#hero" onClick={go('#hero')} className="flex items-center gap-3 transition-colors duration-500" aria-label="Το Τραμ, αρχική">
           <img src="/media/tram-mark.png" alt="" className={cn('h-7 w-auto transition duration-500 md:h-8', (open || dark) && 'invert')} />
           <span className="font-display text-2xl uppercase tracking-wide">Το Τραμ</span>
         </a>
+        {!open && <LineSwitch color={color} className="hidden lg:flex" />}
         <div className="flex items-center gap-3 md:gap-5">
           <a href={SHOP.phoneHref} className="hidden items-center gap-2 font-display text-xl tracking-wide md:inline-flex"><Phone size={18} weight="bold" /> {SHOP.phone}</a>
           {!open && <CartButton color={color} />}
@@ -140,7 +145,7 @@ export default function Nav({ dark }: { dark: boolean }) {
               {LINKS.map((l, i) => (
                 <div key={l.href} ref={(el) => { items.current[i] = el }} className={cn('flex items-baseline gap-4 py-[0.06em] font-display text-[min(7.2vw,9vh)] uppercase leading-none max-[1025px]:text-[min(12.5vw,7.4vh)]', active === l.href ? 'text-ivory' : 'text-ivory/90')} style={{ opacity: 0 }}>
                   <span className="w-[1.6em] shrink-0 font-mono text-[11px] text-ivory/60">{String(i + 1).padStart(2, '0')}{active === l.href ? ' ●' : ''}</span>
-                  <LinkHover label={l.label} href={l.href} onClick={go(l.href)} />
+                  <LinkHover label={l.label} href={l.href} onClick={l.href.startsWith('/') ? (e) => { e.preventDefault(); closeMenu(); setTimeout(() => goTo('order'), 700) } : go(l.href)} />
                 </div>
               ))}
             </div>

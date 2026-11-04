@@ -12,6 +12,7 @@ import Stepper from '@/components/Stepper'
 import { cart, euro, fmtQty, img, isWeight, lineCents, minQty, product, split, step, totals, useCart, weighed, type Line } from '@/lib/cart'
 import { DAYS, HOURS, SHOP } from '@/lib/data'
 import { cn } from '@/lib/cn'
+import { link, ORDER_PATH } from '@/lib/route'
 
 type StepId = 'cart' | 'details' | 'done'
 type Slot = { day: string; label: string; times: string[] }
@@ -63,7 +64,7 @@ function Choice({ on, onClick, children, className }: { on: boolean; onClick: ()
 }
 
 export default function CartDrawer() {
-  const { lines, open } = useCart()
+  const { lines, open, checkout } = useCart()
   const reduced = useReducedMotion()
   const [stepId, setStep] = useState<StepId>('cart')
   const [method, setMethod] = useState<'pickup' | 'delivery'>('pickup')
@@ -79,6 +80,7 @@ export default function CartDrawer() {
   const t = totals(lines)
 
   useEffect(() => { if (open && stepId === 'done' && !sent) setStep('cart') }, [open, stepId, sent])
+  useEffect(() => { if (open && checkout && lines.length) { setTried(false); setStep('details') } }, [open, checkout]) // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { try { const v = JSON.parse(localStorage.getItem('tram-me') || '{}'); setName(v.name || ''); setPhone(v.phone || ''); setAddress(v.address || '') } catch { /* none */ } }, [])
   useEffect(() => { setTime('') }, [day])
 
@@ -107,6 +109,7 @@ export default function CartDrawer() {
     const href = via === 'wa' ? `${SHOP.whatsapp}?text=${encodeURIComponent(text)}` : `sms:+306947884743?&body=${encodeURIComponent(text)}`
     window.open(href, via === 'wa' ? '_blank' : '_self', 'noopener')
     setSent({ code, text, total: `${t.approx ? '~' : ''}${euro(t.cents)}` })
+    cart.remember(lines)
     cart.clear()
     setStep('done')
   }
@@ -154,7 +157,7 @@ export default function CartDrawer() {
                 <Basket size={44} className="text-ink/30" />
                 <p className="mt-4 font-display text-3xl uppercase">Άδειο ακόμα</p>
                 <p className="mt-2 max-w-[30ch] text-ink-2">Διάλεξε από τον πάγκο και θα το έχουμε έτοιμο όταν περάσεις.</p>
-                <a href="#pagkos" onClick={() => cart.closeCart()} className="cut-link mt-6 font-display text-xl uppercase">Στον πάγκο</a>
+                <a href={ORDER_PATH} onClick={(e) => { cart.closeCart(); link('order')(e) }} className="cut-link mt-6 font-display text-xl uppercase">Στον πάγκο</a>
               </div>
             ) : (
               <ul><AnimatePresence initial={false}>{lines.map((l, i) => <LineRow key={l.id + l.note} l={l} i={i} />)}</AnimatePresence></ul>

@@ -7,7 +7,7 @@ import { useSyncExternalStore } from 'react'
 import { MENU, type Product } from '@/lib/menu'
 
 export type Line = { id: string; qty: number; note: string }
-type State = { lines: Line[]; sheet: string | null; open: boolean }
+type State = { lines: Line[]; sheet: string | null; open: boolean; checkout: boolean }
 
 const KEY = 'tram-cart-v1'
 const BY_ID = new Map<string, Product & { cat: string }>()
@@ -17,7 +17,7 @@ export const product = (id: string) => BY_ID.get(id)
 function load(): Line[] {
   try { const v = JSON.parse(localStorage.getItem(KEY) || '[]'); return Array.isArray(v) ? v.filter((l) => BY_ID.has(l.id)) : [] } catch { return [] }
 }
-let state: State = { lines: typeof window === 'undefined' ? [] : load(), sheet: null, open: false }
+let state: State = { lines: typeof window === 'undefined' ? [] : load(), sheet: null, open: false, checkout: false }
 const subs = new Set<() => void>()
 function set(next: Partial<State>) {
   state = { ...state, ...next }
@@ -59,8 +59,12 @@ export const cart = {
   clear() { set({ lines: [] }) },
   openSheet(id: string) { set({ sheet: id }) },
   closeSheet() { set({ sheet: null }) },
-  openCart() { set({ open: true, sheet: null }) },
-  closeCart() { set({ open: false }) },
+  openCart(checkout: unknown = false) { set({ open: true, sheet: null, checkout: checkout === true }) },
+  closeCart() { set({ open: false, checkout: false }) },
+  /** remember what was sent, for one-tap reorder next time */
+  remember(lines: Line[]) { try { localStorage.setItem('tram-last', JSON.stringify({ at: Date.now(), lines })) } catch { /* none */ } },
+  last(): { at: number; lines: Line[] } | null { try { const v = JSON.parse(localStorage.getItem('tram-last') || 'null'); return v && Array.isArray(v.lines) ? { at: v.at, lines: v.lines.filter((l: Line) => BY_ID.has(l.id)) } : null } catch { return null } },
+  reorder() { const l = cart.last(); if (l) l.lines.forEach((x) => cart.add(x.id, x.qty, x.note)) },
 }
 
 export function totals(lines: Line[]) {

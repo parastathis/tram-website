@@ -14,13 +14,14 @@ import { AnimatePresence, motion, useMotionValue, useReducedMotion, useSpring } 
 import { ArrowUpRight, FacebookLogo } from '@phosphor-icons/react'
 import { SHOP } from '@/lib/data'
 import { cn } from '@/lib/cn'
+import { link } from '@/lib/route'
 
 type N = { id: string; when: string; title: string; meta: string; href: string; image: string; alt: string; ext?: boolean }
 const ITEMS: N[] = [
-  { id: 'online', when: 'Νέο', title: 'Παραγγέλνεις πια από εδώ', meta: 'Όλος ο πάγκος με τιμές, στο καλάθι σου. Μας λες πώς να το κόψουμε και πότε περνάς, ή σου το φέρνουμε.', href: '#pagkos', image: '/media/gen/counter-sm.webp', alt: 'Ο πάγκος του καταστήματος' },
+  { id: 'online', when: 'Νέο', title: 'Παραγγέλνεις πια από εδώ', meta: 'Όλος ο πάγκος με τιμές, στο καλάθι σου. Μας λες πώς να το κόψουμε και πότε περνάς, ή σου το φέρνουμε.', href: '/paraggelia', image: '/media/gen/counter-sm.webp', alt: 'Ο πάγκος του καταστήματος' },
   { id: 'giortes', when: 'Χριστούγεννα', title: 'Το γιορτινό τραπέζι κλείνεται νωρίς', meta: 'Γαλοπούλα, γουρουνάκι γάλακτος, αρνί και κατσίκι γάλακτος ολόκληρα ή μισά, κοκορέτσι και γαρδούμπα παραγωγής μας.', href: '#paraggelia', image: '/media/real/fb-arnia-sm.webp', alt: 'Αρνιά κρεμασμένα στο ψυγείο του καταστήματος' },
-  { id: 'spania', when: 'Στον πάγκο', title: 'Αγριογούρουνο, πετεινός Κρήτης, κουνέλι Ρεθύμνου', meta: 'Τα σπάνια του πάγκου, μαζί με γραβιέρα Κρήτης και φέτα Αμφιλοχίας.', href: '#pagkos', image: '/media/p/cmvtxm2th003n08l2af3z4mra-sm.webp', alt: 'Πετεινός Κρήτης' },
-  { id: 'ergastirio', when: 'Εργαστήριο', title: '18 παρασκευές, φτιαγμένες εδώ', meta: 'Λουκάνικο χωριάτικο, κοντοσούβλι, ρολά γεμιστά, σουβλάκια, μπιφτέκια, και το μοσχαρίσιο σουτζούκι πικάντικο.', href: '#pagkos', image: '/media/real/fb-loukaniko-2-sm.webp', alt: 'Χειροποίητα λουκάνικα του εργαστηρίου' },
+  { id: 'spania', when: 'Στον πάγκο', title: 'Αγριογούρουνο, πετεινός Κρήτης, κουνέλι Ρεθύμνου', meta: 'Τα σπάνια του πάγκου, μαζί με γραβιέρα Κρήτης και φέτα Αμφιλοχίας.', href: '/paraggelia', image: '/media/p/cmvtxm2th003n08l2af3z4mra-sm.webp', alt: 'Πετεινός Κρήτης' },
+  { id: 'ergastirio', when: 'Εργαστήριο', title: '18 παρασκευές, φτιαγμένες εδώ', meta: 'Λουκάνικο χωριάτικο, κοντοσούβλι, ρολά γεμιστά, σουβλάκια, μπιφτέκια, και το μοσχαρίσιο σουτζούκι πικάντικο.', href: '/paraggelia', image: '/media/real/fb-loukaniko-2-sm.webp', alt: 'Χειροποίητα λουκάνικα του εργαστηρίου' },
   { id: 'pasxa', when: '8 Απρ 2025', title: 'Σας περιμένουμε να οργανώσουμε το πασχαλινό σας τραπέζι', meta: 'Από τη σελίδα μας στο Facebook.', href: SHOP.facebook, ext: true, image: '/media/real/fb-kokoretsi-sm.webp', alt: 'Κοκορέτσι παραγωγής μας, 11,50 €' },
   { id: 'kalokairi', when: 'Κάθε Αύγουστο', title: 'Κλειστά για λίγες μέρες καλοκαιρινών διακοπών', meta: 'Οι ημερομηνίες βγαίνουν πρώτα στο Facebook.', href: SHOP.facebook, ext: true, image: '/media/real/fb-kalokairi-sm.webp', alt: 'Ανακοίνωση καλοκαιρινών διακοπών του καταστήματος' },
 ]
@@ -76,7 +77,7 @@ export default function News() {
           <ul className="border-t border-ivory/15">
             {ITEMS.map((n, i) => (
               <li key={n.id} className="border-b border-ivory/15">
-                <a href={n.href} target={n.ext ? '_blank' : undefined} rel={n.ext ? 'noopener' : undefined}
+                <a href={n.href} onClick={n.href.startsWith('/') ? link('order') : undefined} target={n.ext ? '_blank' : undefined} rel={n.ext ? 'noopener' : undefined}
                   onMouseEnter={() => { if (hover) { setActive(i); setSource('pointer') } }} onFocus={() => { setActive(i); setSource('focus') }}
                   className={cn('group grid grid-cols-[84px_1fr_auto] items-center gap-4 py-5 outline-none transition-opacity duration-300 md:grid-cols-[180px_1fr_auto] md:gap-8 md:py-7', active !== null && active !== i && 'md:opacity-40')}>
                   <span className="font-mono text-[11.5px] uppercase text-ivory/60 max-md:hidden">{n.when}</span>

@@ -36,3 +36,5 @@ for src, name, ratio, fx in SHOTS:
         out = im if im.width <= width else im.resize((width, round(width / im.width * im.height)), Image.LANCZOS)
         out.save(OUT / f'{name}{suffix}.webp', quality=84, method=6)
     print(name, im.size)
+# tramgen-ippo-1.jpg: Ippokratis behind his own counter (refs IMG_5825, IMG_5824 + the counter edit),
+# saved by hand as media/gen/ippokratis-counter(.webp, -sm, -m 4:5 at x .71)

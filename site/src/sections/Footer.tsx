@@ -39,7 +39,7 @@ export default function Footer() {
                 <li><a className="hover:text-ink" href="#kreata">Τα κρέατα</a></li>
                 <li><a className="hover:text-ink" href="#pagkos">Ο πάγκος, με τιμές</a></li>
                 <li><a className="hover:text-ink" href="#nea">Νέα</a></li>
-                <li><a className="hover:text-ink" href="#paraggelia">Παραγγελία</a></li>
+                <li><a className="hover:text-ink" href="/paraggelia">Παράγγειλε τώρα</a></li>
                 <li><a className="hover:text-ink" href="#ores">Ώρες & πού</a></li>
               </ul>
             </div>

@@ -6,8 +6,8 @@
  * last frame is cut on the cleaver's diagonal and the halves slide away; out of the gap comes the
  * shop's tram (generated film, Veo 3.1 from the head-on Nano Banana picture, scrubbed frame by
  * frame so it follows the hand), it drives straight at you until its headlamp fills the screen,
- * crashes into the glass (shake and flash), and behind the flash stands the hub: four doors into
- * the site, the way a chain lets you pick a store. Reduced motion: the still, the title, the hub.
+ * crashes into the glass (shake and flash), and behind the flash stands the departure board: two
+ * lines leave from here, Παράγγειλε τώρα and Το μαγαζί. Reduced motion: the still, the title, the board.
  */
 import { useEffect, useRef, useState } from 'react'
 import gsap from 'gsap'
@@ -15,7 +15,10 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import Btn from '@/components/Btn'
 import { SHOP } from '@/lib/data'
 import { getLenis } from '@/lib/smooth'
+import { link, ORDER_PATH } from '@/lib/route'
+import FlapText from '@/components/FlapBoard'
 import { cn } from '@/lib/cn'
+import { ArrowRight } from '@phosphor-icons/react'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -29,11 +32,10 @@ const tcut = Math.tan((CUT * Math.PI) / 180) * 50
 const CLIP_A = `polygon(0 0, 100% 0, 100% ${50 - tcut + 0.4}%, 0 ${50 + tcut + 0.4}%)`
 const CLIP_B = `polygon(0 ${50 + tcut}%, 100% ${50 - tcut}%, 100% 100%, 0 100%)`
 
-const DOORS = [
-  { n: '01', label: 'Ο πάγκος', sub: '84 είδη με τιμές, παραγγελία online', href: '#pagkos', src: '/media/p/cmvtxlxlk000808l2epj2d90r.webp' },
-  { n: '02', label: 'Το μαγαζί', sub: 'Σπάρτης & Σαλαμίνος, από το 1983', href: '#magazi', src: '/media/gen/front-m.webp' },
-  { n: '03', label: 'Ο Ιπποκράτης', sub: 'Κόβει μπροστά σου', href: '#ippokratis', src: '/media/gen/ippokratis-studio-wide.webp' },
-  { n: '04', label: 'Νέα', sub: 'Γιορτές, νέα είδη, ανακοινώσεις', href: '#nea', src: '/media/gen/interior-t.webp' },
+/** the departure board after the crash: two lines leave from this terminus */
+const LINES = [
+  { n: '1', name: 'Παράγγειλε τώρα', sub: 'Όλος ο πάγκος με τιμές, σε δύο βήματα', when: 'Τώρα', order: true, href: ORDER_PATH },
+  { n: '2', name: 'Το μαγαζί', sub: 'Τα κρέατα, ο Ιπποκράτης, από το 1983', when: 'Με τα πόδια', order: false, href: '#kreata' },
 ]
 
 export default function Hero() {
@@ -54,6 +56,9 @@ export default function Hero() {
   const flash = useRef<HTMLDivElement>(null)
   const hub = useRef<HTMLDivElement>(null)
   const doors = useRef<(HTMLAnchorElement | null)[]>([])
+  const [board, setBoard] = useState(false)
+  const [clock, setClock] = useState('')
+  useEffect(() => { const f = () => setClock(new Date().toLocaleTimeString('el-GR', { hour: '2-digit', minute: '2-digit' })); f(); const id = setInterval(f, 20000); return () => clearInterval(id) }, [])
   const hubHead = useRef<HTMLDivElement>(null)
   const hint = useRef<HTMLDivElement>(null)
   const [reduced] = useState(() => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches)
@@ -151,6 +156,7 @@ export default function Hero() {
       tl.fromTo(doors.current.filter(Boolean), { yPercent: 100 }, { yPercent: 0, ease: 'power3.out', duration: 0.22, stagger: 0.035 }, 0.64)
       tl.to(flash.current, { opacity: 0, ease: 'power2.out', duration: 0.18 }, 0.66)
       tl.fromTo(hubHead.current, { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.14 }, 0.78)
+      tl.eventCallback('onUpdate', () => setBoard(tl.progress() > 0.66))
       return () => window.removeEventListener('resize', fit)
     }, section)
     return () => ctx.revert()
@@ -201,7 +207,7 @@ export default function Hero() {
               <div className="mt-5 flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
                 <p ref={sub} className="max-w-[34ch] text-lg leading-snug text-ivory/90 md:text-xl">Παραδοσιακό κρεοπωλείο στον Πειραιά από το 1983. Κόβουμε μπροστά σου, την ώρα που το ζητάς.</p>
                 <div ref={cta} className="flex flex-col gap-3 sm:flex-row">
-                  <Btn href="#pagkos" onClick={go('#pagkos')}>Παράγγειλε online</Btn>
+                  <Btn href={ORDER_PATH} onClick={link('order')}>Παράγγειλε τώρα</Btn>
                   <Btn href={SHOP.phoneHref} variant="ivory">{SHOP.phone}</Btn>
                 </div>
               </div>
@@ -210,26 +216,29 @@ export default function Hero() {
           </>
         )}
 
-        {/* the hub: four doors into the site */}
-        <div ref={hub} className={cn('absolute inset-0 z-20 flex flex-col bg-ink', !reduced && 'invisible')}>
-          <div ref={hubHead} className="flex items-end justify-between px-5 pb-3 pt-20 md:px-8 md:pt-24">
-            <p className="font-mono text-[12px] text-ivory/70">Τέρμα. Διάλεξε πού πας.</p>
-            <p className="hidden font-mono text-[12px] text-ivory/70 md:block">{SHOP.address} · Πειραιάς</p>
+        {/* the departure board: two lines into the site */}
+        <div ref={hub} className={cn('absolute inset-0 z-20 flex flex-col justify-center bg-ink px-5 md:px-8', !reduced && 'invisible')}>
+          <div ref={hubHead} className="mx-auto flex w-full max-w-[1280px] items-end justify-between border-b border-ivory/20 pb-3">
+            <p className="font-display text-2xl uppercase tracking-wide text-ivory md:text-3xl">Αναχωρήσεις <span className="text-ivory/50">· Τέρμα Κοπή</span></p>
+            <p className="font-mono text-[13px] tabular-nums text-ivory/70">{clock}</p>
           </div>
-          <nav aria-label="Είσοδοι" className="grid flex-1 grid-cols-2 gap-[2px] overflow-hidden px-[2px] pb-[2px] md:grid-cols-4">
-            {DOORS.map((d, i) => (
-              <a key={d.href} ref={(el) => { doors.current[i] = el }} href={d.href} onClick={go(d.href)} className="group relative block overflow-hidden bg-ink-2/20 no-underline">
-                <img src={d.src} alt="" className="absolute inset-0 h-full w-full object-cover opacity-55 transition duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.04] group-hover:opacity-90" />
-                <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/20 to-transparent" />
-                <span className="absolute left-4 top-4 font-mono text-[12px] text-ivory/80">{d.n}</span>
-                <span className="absolute right-4 top-4 h-2 w-2 bg-red opacity-0 transition group-hover:opacity-100" />
-                <div className="absolute inset-x-4 bottom-4 md:inset-x-5 md:bottom-6">
-                  <span className="block font-display text-[clamp(1.9rem,5.2vw,4.4rem)] uppercase leading-[.9] text-ivory">{d.label}</span>
-                  <span className="mt-2 block max-w-[26ch] font-mono text-[11px] text-ivory/70 opacity-0 transition duration-500 group-hover:opacity-100">{d.sub}</span>
-                </div>
+          <nav aria-label="Γραμμές" className="mx-auto w-full max-w-[1280px] overflow-hidden">
+            {LINES.map((l, i) => (
+              <a key={l.n} ref={(el) => { doors.current[i] = el }} href={l.href} onClick={l.order ? link('order') : go(l.href)}
+                className={cn('group grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-4 border-b border-ivory/15 py-5 no-underline md:gap-8 md:py-8', l.order ? 'text-ivory' : 'text-ivory/85')}>
+                <span className={cn('flex h-12 w-12 items-center justify-center font-display text-3xl md:h-20 md:w-20 md:text-5xl', l.order ? 'bg-red text-ivory' : 'border-2 border-ivory/60 text-ivory')}>{l.n}</span>
+                <span className="min-w-0">
+                  <FlapText text={l.name} play={board || reduced} stagger={l.order ? 40 : 55} className="font-display text-[clamp(1.2rem,5.2vw,6rem)] uppercase leading-none text-ivory" />
+                  <span className="mt-2 block font-mono text-[11.5px] text-ivory/65 md:text-[13px]">{l.sub}</span>
+                </span>
+                <span className="flex flex-col items-end gap-2">
+                  <span className={cn('font-mono text-[11px] uppercase tracking-[.12em] md:text-[12.5px]', l.order ? 'text-[#E8A0A6]' : 'text-ivory/60')}>{l.when}</span>
+                  <ArrowRight size={26} weight="bold" className="transition-transform duration-300 group-hover:translate-x-1.5" />
+                </span>
               </a>
             ))}
           </nav>
+          <p className="mx-auto mt-4 w-full max-w-[1280px] font-mono text-[11.5px] text-ivory/55">{SHOP.address} · Κοπή, Πειραιάς · {SHOP.phone}</p>
         </div>
         {/* the flash of the crash, above everything */}
         {!reduced && <div ref={flash} className="pointer-events-none absolute inset-0 z-30 opacity-0" style={{ background: 'radial-gradient(circle at 50% 50%, #FFF3D6 0%, #F2D9A6 45%, #EFEAE0 100%)' }} />}

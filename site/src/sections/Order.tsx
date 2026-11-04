@@ -10,7 +10,7 @@ import { AnimatePresence, motion, useAnimationControls, useReducedMotion } from 
 import { Minus, Plus } from '@phosphor-icons/react'
 import Btn from '@/components/Btn'
 import { SHOP, STOPS } from '@/lib/data'
-import { cart } from '@/lib/cart'
+import { link, ORDER_PATH } from '@/lib/route'
 import { cn } from '@/lib/cn'
 
 const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v))
@@ -73,8 +73,8 @@ export default function Order() {
         <div className="grid gap-12 md:grid-cols-[1fr_1fr] md:gap-20">
           <div>
             <h2 className="font-display text-[clamp(3.2rem,8vw,7rem)] uppercase leading-[.9]">Παραγγελία για παραλαβή.</h2>
-            <p className="mt-4 max-w-[44ch] text-lg text-ink-2">Ο πιο γρήγορος δρόμος είναι το καλάθι του site: διαλέγεις από τον πάγκο, μας λες πότε περνάς και πληρώνεις στο ταμείο. Για το τραπέζι της Κυριακής, το Πάσχα ή τα Χριστούγεννα, γράψε μας εδώ τι θέλεις και πότε περνάς.</p>
-            <div className="mt-8"><Btn onClick={cart.openCart}>Άνοιξε το καλάθι</Btn></div>
+            <p className="mt-4 max-w-[44ch] text-lg text-ink-2">Ο πιο γρήγορος δρόμος είναι η σελίδα παραγγελίας: διαλέγεις από όλο τον πάγκο, μας λες πότε περνάς και πληρώνεις στο ταμείο. Για το τραπέζι της Κυριακής, το Πάσχα ή τα Χριστούγεννα, γράψε μας εδώ τι θέλεις και πότε περνάς.</p>
+            <div className="mt-8"><Btn href={ORDER_PATH} onClick={link('order')}>Παράγγειλε τώρα</Btn></div>
             <ul className="mt-8 space-y-2 text-[15px] text-ink-2">
               <li>Παραλαβή από το κατάστημα, Σπάρτης & Σαλαμίνος 124.</li>
               <li>Οι παραγγελίες γιορτών κλείνουν λίγες μέρες πριν. Ρώτα μας νωρίς.</li>
