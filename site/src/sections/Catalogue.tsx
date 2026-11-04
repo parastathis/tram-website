@@ -11,9 +11,11 @@
  */
 import { useCallback, useId, useMemo, useRef, useState, type KeyboardEvent } from 'react'
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
-import { ArrowUpRight, MagnifyingGlass } from '@phosphor-icons/react'
+import { Plus, MagnifyingGlass } from '@phosphor-icons/react'
 import Btn from '@/components/Btn'
-import { MENU, ORDEROO, type Product } from '@/lib/menu'
+import { MENU, type Product } from '@/lib/menu'
+import { cart, defaultQty, price, split, useCart } from '@/lib/cart'
+import { flyToCart } from '@/lib/fly'
 import { cn } from '@/lib/cn'
 
 const CELL = { type: 'spring', stiffness: 520, damping: 34, mass: 0.45 } as const
@@ -22,28 +24,6 @@ const EASE = [0.23, 1, 0.32, 1] as const
 const LEAVE = { duration: 0.14, ease: [0.4, 0, 1, 1] } as const
 const INSTANT = { duration: 0 } as const
 
-const ORIGINS = ['Ελασσόνας', 'Πίνδος', 'Νάξου', 'Νιτσιάκος', 'Κρήτης', 'Ρεθύμνου', 'Αμφιλοχίας']
-const euro = (c: number) => (c / 100).toFixed(2).replace('.', ',') + ' €'
-
-/** "Κόντρα Νεαρό Μοσχάρι Ελληνικό Ελασσόνας" -> title "Κόντρα", tag "Νεαρό μοσχάρι · Ελασσόνας" */
-function split(p: Product, cat: string) {
-  let t = p.name
-  const origin = ORIGINS.find((o) => t.includes(o))
-  const greek = /Ελληνικ[όήά]/.test(t)
-  t = t.replace(/\s*Ελληνικ[όήά]\s*/g, ' ')
-  if (origin) t = t.replace(origin, ' ')
-  t = t.replace(/\s+Νεαρό Μοσχάρι/, '').replace(/\s+Χοιριν[όή](?=\s|$)/, '').replace(/\s+/g, ' ').trim()
-  const kind = /Νεαρό Μοσχάρι/.test(p.name) ? 'Νεαρό μοσχάρι' : cat
-  const tag = [kind, origin ?? (greek ? 'Ελληνικό' : null)].filter(Boolean).join(' · ')
-  return { title: t, tag }
-}
-
-function price(p: Product) {
-  if (p.sale === 'PIECE_BY_WEIGHT' && p.grams && p.perKg) return { main: `~${euro(Math.round((p.perKg * p.grams) / 1000))}`, sub: `το κομμάτι, ~${(p.grams / 1000).toString().replace('.', ',')} kg · ${euro(p.perKg)}/kg` }
-  if (p.sale === 'WEIGHT') return { main: euro(p.cents), sub: 'το κιλό' }
-  return { main: euro(p.cents), sub: 'το τεμάχιο' }
-}
-
 type Item = Product & { cat: string }
 const ITEMS: Item[] = MENU.flatMap((c) => c.items.map((p) => ({ ...p, cat: c.name })))
 const FILTERS = MENU.map((c) => ({ id: c.id, label: c.name }))
@@ -51,9 +31,13 @@ const FILTERS = MENU.map((c) => ({ id: c.id, label: c.name }))
 function Card({ p }: { p: Item }) {
   const { title, tag } = split(p, p.cat)
   const pr = price(p)
+  const photo = useRef<HTMLDivElement>(null)
+  const { lines } = useCart()
+  const inCart = lines.filter((l) => l.id === p.id).reduce((n, l) => n + l.qty, 0)
+  const quick = () => { void flyToCart(photo.current, p.img ? `/media/p/${p.img}-sm.webp` : null); cart.add(p.id, defaultQty(p)) }
   return (
-    <a href={ORDEROO} target="_blank" rel="noopener" className="group flex h-full flex-col bg-ivory text-ink outline-none focus-visible:ring-2 focus-visible:ring-red">
-      <div className="relative aspect-[16/10] overflow-hidden bg-[#ECEAE7]">
+    <article className="group relative flex h-full flex-col bg-ivory text-ink">
+      <div ref={photo} className="relative aspect-[16/10] overflow-hidden bg-[#ECEAE7]">
         {p.img ? (
           <img src={`/media/p/${p.img}-sm.webp`} srcSet={`/media/p/${p.img}-sm.webp 640w, /media/p/${p.img}.webp 1600w`} sizes="(min-width: 1024px) 25vw, 50vw" alt={p.name} loading="lazy" className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-[cubic-bezier(.22,1,.36,1)] group-hover:scale-[1.06]" />
         ) : (
@@ -62,19 +46,22 @@ function Card({ p }: { p: Item }) {
           </div>
         )}
         <span className="absolute left-2 top-2 bg-ivory/90 px-2 py-[3px] font-mono text-[10.5px] text-ink-2 md:left-3 md:top-3">{tag}</span>
+        {inCart > 0 && <span className="absolute bottom-2 left-2 bg-ink px-2 py-[3px] font-mono text-[10.5px] font-semibold text-ivory md:bottom-3 md:left-3">στο καλάθι</span>}
       </div>
       <div className="flex flex-1 flex-col border-x border-b border-ink/15 p-3 md:p-4">
-        <h3 className="line-clamp-2 min-h-[2em] font-display text-[clamp(1.25rem,2vw,1.7rem)] uppercase leading-[1]">{title}</h3>
+        <h3 className="line-clamp-2 min-h-[2em] font-display text-[clamp(1.25rem,2vw,1.7rem)] uppercase leading-[1]">
+          <button type="button" onClick={() => cart.openSheet(p.id)} className="text-left uppercase outline-none after:absolute after:inset-0 after:content-[''] focus-visible:after:ring-2 focus-visible:after:ring-red">{title}</button>
+        </h3>
         <p className="mt-2 line-clamp-2 min-h-[2.6em] text-[13.5px] leading-snug text-ink-2 md:text-[14.5px]">{p.desc || ' '}</p>
         <div className="mt-auto flex items-end justify-between gap-2 pt-4">
           <div>
             <p className="font-mono text-[15px] font-semibold tabular-nums md:text-[17px]">{pr.main}</p>
             <p className="font-mono text-[10.5px] text-ink-2">{pr.sub}</p>
           </div>
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center bg-red text-ivory transition-transform duration-300 group-hover:-translate-y-0.5" aria-hidden><ArrowUpRight size={18} weight="bold" /></span>
+          <motion.button type="button" onClick={quick} whileTap={{ scale: 0.88 }} aria-label={`Βάλε ${title} στο καλάθι`} className="relative z-10 flex h-11 w-11 shrink-0 items-center justify-center bg-red text-ivory transition-colors hover:bg-red-deep focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2"><Plus size={20} weight="bold" /></motion.button>
         </div>
       </div>
-    </a>
+    </article>
   )
 }
 
@@ -114,9 +101,9 @@ export default function Catalogue() {
             <h2 className="font-display text-[clamp(3.4rem,9vw,8.4rem)] uppercase leading-[.86]">Ο πάγκος,<br />με τιμές</h2>
           </div>
           <div className="md:col-span-5">
-            <p className="max-w-[44ch] text-lg text-ink-2">Ό,τι έχει σήμερα η βιτρίνα, με την τιμή του. Διάλεξε, παράγγειλε online και πέρνα να το πάρεις: είναι έτοιμο σε 15 με 25 λεπτά.</p>
+            <p className="max-w-[44ch] text-lg text-ink-2">Ό,τι έχει σήμερα η βιτρίνα, με την τιμή του. Πάτα το + ή άνοιξε ένα κομμάτι να μας πεις πώς το θέλεις κομμένο. Το έχουμε έτοιμο όταν περάσεις, ή σου το φέρνουμε.</p>
             <div className="mt-6 flex flex-wrap gap-3">
-              <Btn href={ORDEROO} target="_blank">Παράγγειλε online</Btn>
+              <Btn onClick={cart.openCart}>Το καλάθι μου</Btn>
             </div>
           </div>
         </div>
@@ -155,7 +142,7 @@ export default function Catalogue() {
         </ul>
         {visible.length === 0 && <p className="py-16 text-center text-ink-2">Δεν το βρήκαμε στον πάγκο. Πάρε τηλέφωνο, μπορεί να το έχουμε στο ψυγείο.</p>}
         <p aria-live="polite" className="sr-only">{activeLabel}: {visible.length} από {ITEMS.length}</p>
-        <p className="pb-24 pt-4 font-mono text-[11.5px] text-ink-2 md:pb-32">Οι τιμές είναι του online καταλόγου μας και μπορεί να αλλάξουν. Για ποσότητες γιορτής, πάρε τηλέφωνο.</p>
+        <p className="pb-24 pt-4 font-mono text-[11.5px] text-ink-2 md:pb-32">Οι τιμές είναι της ημέρας και μπορεί να αλλάξουν. Τα κρέατα πληρώνονται με το βάρος τους. Για ποσότητες γιορτής, πάρε τηλέφωνο.</p>
       </div>
     </section>
   )

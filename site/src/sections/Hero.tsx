@@ -14,7 +14,6 @@ import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import Btn from '@/components/Btn'
 import { SHOP } from '@/lib/data'
-import { ORDEROO } from '@/lib/menu'
 import { getLenis } from '@/lib/smooth'
 import { cn } from '@/lib/cn'
 
@@ -202,7 +201,7 @@ export default function Hero() {
               <div className="mt-5 flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
                 <p ref={sub} className="max-w-[34ch] text-lg leading-snug text-ivory/90 md:text-xl">Παραδοσιακό κρεοπωλείο στον Πειραιά από το 1983. Κόβουμε μπροστά σου, την ώρα που το ζητάς.</p>
                 <div ref={cta} className="flex flex-col gap-3 sm:flex-row">
-                  <Btn href={ORDEROO} target="_blank">Παράγγειλε online</Btn>
+                  <Btn href="#pagkos" onClick={go('#pagkos')}>Παράγγειλε online</Btn>
                   <Btn href={SHOP.phoneHref} variant="ivory">{SHOP.phone}</Btn>
                 </div>
               </div>

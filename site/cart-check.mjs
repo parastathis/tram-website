@@ -1,0 +1,32 @@
+import { chromium } from 'playwright'
+const browser = await chromium.launch({ channel: 'msedge' })
+const errs = []
+for (const [name, w, h] of [['desk', 1440, 900], ['phone', 390, 844]]) {
+  const ctx = await browser.newContext({ viewport: { width: w, height: h }, isMobile: w < 500, hasTouch: w < 500 })
+  const page = await ctx.newPage()
+  page.on('console', (m) => { if (m.type() === 'error') errs.push(`${name}: ${m.text()}`) })
+  page.on('pageerror', (e) => errs.push(`${name}: ${e.message}`))
+  await page.addInitScript(() => { window.__opened = []; window.open = (u) => { window.__opened.push(u); return null } })
+  await page.goto('http://localhost:5190/', { waitUntil: 'networkidle' }); await page.waitForTimeout(2800)
+  const enter = page.getByRole('button', { name: /Μπες/ }); if (await enter.count()) { await enter.first().click({ force: true }); await page.waitForTimeout(1500) }
+  await page.evaluate(() => document.getElementById('pagkos').scrollIntoView()); await page.waitForTimeout(1500)
+  const s = (k) => page.screenshot({ path: `../shots/cart-${name}-${k}.png` })
+  await page.getByRole('button', { name: /^Βάλε .* στο καλάθι$/ }).first().click(); await page.waitForTimeout(250); await s('1-fly'); await page.waitForTimeout(900)
+  await page.locator('#pagkos article h3 button').nth(1).click(); await page.waitForTimeout(900); await s('2-sheet')
+  await page.getByText('Μπριζόλες', { exact: true }).first().click()
+  await page.getByRole('button', { name: 'Περισσότερο' }).first().dispatchEvent('pointerdown'); await page.getByRole('button', { name: 'Περισσότερο' }).first().dispatchEvent('pointerup')
+  await page.waitForTimeout(300); await s('3-sheet-filled')
+  await page.getByRole('button', { name: /Στο καλάθι/ }).click(); await page.waitForTimeout(1200)
+  await page.locator('[data-cart-target]').first().click(); await page.waitForTimeout(900); await s('4-cart')
+  await page.getByRole('button', { name: 'Συνέχεια' }).click(); await page.waitForTimeout(700); await s('5-details')
+  await page.getByRole('button', { name: /Στείλε την παραγγελία/ }).click(); await page.waitForTimeout(300); await s('6-invalid')
+  await page.getByRole('radio', { name: /Διανομή/ }).click()
+  const dlg = page.getByRole('dialog'); await dlg.getByLabel('Όνομα', { exact: true }).fill('Δοκιμή'); await dlg.getByLabel('Κινητό').fill('6900000000'); await dlg.getByLabel('Διεύθυνση').fill('Σαλαμίνος 10')
+  await page.locator('[aria-label="Ώρα"] button').first().click(); await page.waitForTimeout(300); await s('7-filled')
+  await page.getByRole('button', { name: /Στείλε την παραγγελία/ }).click(); await page.waitForTimeout(900); await s('8-done')
+  const opened = await page.evaluate(() => window.__opened)
+  console.log(name, decodeURIComponent((opened[0] || 'NOT OPENED').split('text=')[1] || opened[0]))
+  const ov = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth); if (ov > 0) errs.push(`${name}: overflow ${ov}`)
+}
+console.log(errs.join('\n') || 'no errors')
+await browser.close()

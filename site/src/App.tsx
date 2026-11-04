@@ -3,6 +3,8 @@ import { initSmooth } from '@/lib/smooth'
 import Nav from '@/components/Nav'
 import Preloader from '@/components/Preloader'
 import MobileBar from '@/components/MobileBar'
+import ProductSheet from '@/components/ProductSheet'
+import CartDrawer from '@/components/CartDrawer'
 import Hero from '@/sections/Hero'
 import Chapters from '@/sections/Chapters'
 import Cuts from '@/sections/Cuts'
@@ -46,6 +48,8 @@ export default function App() {
       </main>
       <Footer />
       <MobileBar />
+      <ProductSheet />
+      <CartDrawer />
     </>
   )
 }

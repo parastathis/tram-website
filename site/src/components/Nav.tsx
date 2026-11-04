@@ -12,6 +12,7 @@ import { Phone, FacebookLogo } from '@phosphor-icons/react'
 import { SHOP } from '@/lib/data'
 import { getLenis } from '@/lib/smooth'
 import { cn } from '@/lib/cn'
+import CartButton from '@/components/CartButton'
 
 export const LINKS = [
   { label: 'Τα κρέατα', href: '#kreata' },
@@ -121,8 +122,9 @@ export default function Nav({ dark }: { dark: boolean }) {
           <img src="/media/tram-mark.png" alt="" className={cn('h-7 w-auto transition duration-500 md:h-8', (open || dark) && 'invert')} />
           <span className="font-display text-2xl uppercase tracking-wide">Το Τραμ</span>
         </a>
-        <div className="flex items-center gap-5">
+        <div className="flex items-center gap-3 md:gap-5">
           <a href={SHOP.phoneHref} className="hidden items-center gap-2 font-display text-xl tracking-wide md:inline-flex"><Phone size={18} weight="bold" /> {SHOP.phone}</a>
+          {!open && <CartButton color={color} />}
           <button ref={toggle} type="button" onClick={toggleMenu} aria-label="Μενού" aria-expanded={open} className="flex h-11 w-11 flex-col items-center justify-center gap-1.5">
             <span className={cn('block h-0.5 w-7 transition-all duration-700 ease-in-out', open && 'translate-y-2 rotate-45')} style={{ background: color }} />
             <span className={cn('block h-0.5 w-7 transition-all duration-500', open && 'scale-x-0 opacity-0')} style={{ background: color }} />
