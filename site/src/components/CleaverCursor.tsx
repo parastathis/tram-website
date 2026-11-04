@@ -13,19 +13,43 @@ import { AnimatePresence, motion, useAnimationControls, useMotionValue, useSprin
 const FOLLOW = { damping: 28, stiffness: 420, mass: 0.5 }
 const CLICKABLE = 'a, button, [role="button"], label, select, summary, [data-cursor], [data-cursor-left]'
 
-/** Steel blade with its hole, a wooden handle with two rivets. Hotspot = front of the edge (4, 47). */
-export function Cleaver({ w = 88 }: { w?: number }) {
-  return (
-    <svg viewBox="0 0 64 44" width={w} height={(w * 44) / 64} aria-hidden style={{ display: 'block', filter: 'drop-shadow(0 2px 3px rgba(14,12,13,.35))' }}>
-      <path d="M40 11.5h19.5a3.5 3.5 0 0 1 0 7H40z" fill="#9A6440" stroke="#0E0C0D" strokeWidth="1" />
-      <path d="M44 13.2h14" stroke="#C08A5E" strokeWidth="1.2" strokeLinecap="round" />
-      <circle cx="47" cy="15" r="1.1" fill="#C9C2B6" /><circle cx="54" cy="15" r="1.1" fill="#C9C2B6" />
-      <path d="M2 4.5A2.5 2.5 0 0 1 4.5 2H40v28.5c0 1.4-1 2.5-2.4 2.6L3.8 36.8A2 2 0 0 1 1.6 34.8z" fill="#D9D5CE" stroke="#0E0C0D" strokeWidth="1" />
-      <path d="M1.6 30.4 38.6 26.6 40 30.5c0 1.4-1 2.5-2.4 2.6L3.8 36.8A2 2 0 0 1 1.6 34.8z" fill="#F4F1EA" />
-      <path d="M4 3.8h34" stroke="#A9A39A" strokeWidth="1.4" strokeLinecap="round" />
-      <circle cx="33" cy="10" r="3.1" fill="#0E0C0D" />
-    </svg>
-  )
+/** Ippokratis's own cleaver: dark carbon steel with patina, a bright worn edge, a steel collar,
+ *  a slim black handle. Drawn in real tones, no outlines. Hotspot = front of the edge (3, 33). */
+// Patina is soft stains, not lines; no hole and no rivets (his cleaver shows neither).
+const CLEAVER_PATHS = `
+  <defs>
+    <linearGradient id="cv-steel" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#7C766F"/><stop offset=".18" stop-color="#5D5852"/>
+      <stop offset=".55" stop-color="#4A4541"/><stop offset=".86" stop-color="#3B3734"/><stop offset="1" stop-color="#5A5550"/>
+    </linearGradient>
+    <linearGradient id="cv-sheen" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".45" stop-color="#fff" stop-opacity=".13"/><stop offset=".6" stop-color="#fff" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="cv-edge" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#A9A39A"/><stop offset="1" stop-color="#E6E2DA"/>
+    </linearGradient>
+    <linearGradient id="cv-handle" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3A302C"/><stop offset=".35" stop-color="#1A1514"/><stop offset="1" stop-color="#0B0909"/>
+    </linearGradient>
+    <linearGradient id="cv-collar" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#CFCAC2"/><stop offset=".5" stop-color="#8E8880"/><stop offset="1" stop-color="#5E5953"/>
+    </linearGradient>
+    <radialGradient id="cv-patina"><stop offset="0" stop-color="#2E2723" stop-opacity=".32"/><stop offset="1" stop-color="#2E2723" stop-opacity="0"/></radialGradient>
+  </defs>
+  <path d="M58 9.6h15.5c2.6 0 4.5 1.6 4.5 3.9s-1.9 3.9-4.5 3.9H58z" fill="url(#cv-handle)"/>
+  <path d="M60 10.6h13" stroke="#fff" stroke-opacity=".14" stroke-width=".8" stroke-linecap="round"/>
+  <rect x="53.6" y="8.8" width="4.8" height="9.4" rx="1" fill="url(#cv-collar)"/>
+  <path d="M3.2 3.6h50.6v23.9L5.6 34.2C3.9 34.4 2.4 33.2 2.4 31.5V4.4c0-.5.4-.8.8-.8z" fill="url(#cv-steel)"/>
+  <path d="M3.2 3.6h50.6v23.9L5.6 34.2C3.9 34.4 2.4 33.2 2.4 31.5V4.4c0-.5.4-.8.8-.8z" fill="url(#cv-sheen)"/>
+  <path d="M2.4 29.6 53.8 23.4v4.1L5.6 34.2c-1.7.2-3.2-1-3.2-2.7z" fill="#615B55" fill-opacity=".55"/>
+  <path d="M2.6 31.9 53.8 25.9v1.6L5.6 34.2c-1.5.2-2.8-.8-3-2.3z" fill="url(#cv-edge)"/>
+  <path d="M3.2 3.6h50.6" stroke="#B3ADA4" stroke-opacity=".7" stroke-width=".9"/>
+  <ellipse cx="18" cy="15" rx="13" ry="7" fill="url(#cv-patina)"/>
+  <ellipse cx="42" cy="20" rx="10" ry="5" fill="url(#cv-patina)"/>
+`
+
+export function Cleaver({ w = 92 }: { w?: number }) {
+  return <svg viewBox="0 0 80 44" width={w} height={(w * 44) / 80} aria-hidden style={{ display: 'block', filter: 'drop-shadow(0 3px 4px rgba(14,12,13,.4)) drop-shadow(0 0 1px rgba(239,234,224,.35))' }} dangerouslySetInnerHTML={{ __html: CLEAVER_PATHS }} />
 }
 
 export default function CleaverCursor() {
@@ -83,9 +107,9 @@ export default function CleaverCursor() {
   return (
     <div aria-hidden className="pointer-events-none fixed inset-0 z-[2147483000]">
       <motion.div className="absolute left-0 top-0" style={{ x: sx, y: sy }} animate={{ opacity: seen ? 1 : 0 }} transition={{ duration: 0.15 }}>
-        <motion.div style={{ rotate: tilt, scale: squash, transformOrigin: '4px 47px', x: -4, y: -47 }}>
-          <motion.div animate={{ rotate: hot ? -14 : 0, scale: hot ? 1.06 : 1 }} transition={{ type: 'spring', stiffness: 380, damping: 22 }} style={{ transformOrigin: '77px 19px' }}>
-            <motion.div animate={chop} style={{ transformOrigin: '77px 19px' }}><Cleaver /></motion.div>
+        <motion.div style={{ rotate: tilt, scale: squash, transformOrigin: '3.5px 38px', x: -3.5, y: -38 }}>
+          <motion.div animate={{ rotate: hot ? -14 : 0, scale: hot ? 1.06 : 1 }} transition={{ type: 'spring', stiffness: 380, damping: 22 }} style={{ transformOrigin: '78px 15.5px' }}>
+            <motion.div animate={chop} style={{ transformOrigin: '78px 15.5px' }}><Cleaver /></motion.div>
           </motion.div>
         </motion.div>
         <AnimatePresence>

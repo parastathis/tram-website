@@ -58,4 +58,4 @@ img { max-width: 100%; }
 /* The cleaver pointer (components/CleaverCursor.tsx): the system cursor is hidden on mouse devices,
    and with reduced motion the same cleaver is a plain CSS cursor. */
 html.cleaver-live, html.cleaver-live * { cursor: none !important; }
-html.cleaver-static, html.cleaver-static * { cursor: url('/media/cleaver-cursor.svg') 3 34, auto !important; }
+html.cleaver-static, html.cleaver-static * { cursor: url('/media/cleaver-cursor.svg') 3 33, auto !important; }
