@@ -50,7 +50,6 @@ export default function Footer() {
             <span>© {new Date().getFullYear()} {SHOP.full}</span>
             <span className="inline-flex items-center gap-2"><span className={`h-2 w-2 ${open ? 'bg-green' : 'bg-ink/40'}`} />{open ? 'Ανοιχτά τώρα' : 'Κλειστά τώρα'}</span>
           </div>
-          <span className="text-sm text-ink-2">Σχεδιασμός: <a href="https://stathisparas.com" className="hover:text-ink" target="_blank" rel="noopener">Στάθης Παρασκευόπουλος</a></span>
         </div>
       </div>
       <div aria-hidden className="pointer-events-none select-none px-5 md:px-8">
