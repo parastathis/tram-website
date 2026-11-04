@@ -1,67 +1,103 @@
 /**
  * Νέα από το μαγαζί. What is new at the counter, and what the shop has posted.
- * Ported from 21st.dev "Hover Image List" by educalvolpz
- * (https://21st.dev/@educalvolpz/components/hover-image-list).
- * Kept: rows that reveal a preview next to the cursor with a spring follow and a skew from the
- * pointer's speed, a fixed preview on focus, rAF-throttled pointer tracking, reduced motion.
- * Changed: rows are dated notices in the condensed face, the preview is a square photo with no
- * radius, and on touch screens each row shows its own photo (there is no hover there).
+ * Rows: ported from 21st.dev "Interactive List Preview" by hyperiux
+ * (https://21st.dev/@hyperiux/components/interactive-list-preview).
+ * Kept: a highlight bar that slides to the hovered row with GSAP (power3.out), the row text
+ * re-coloured on the bar, the bar fading out when the pointer leaves the list, reduced motion.
+ * Changed: no preview photos at all (he asked for them gone); the bar is a tram-red block that
+ * wipes in from the left like a cut, rows are dated notices in the condensed face.
+ * Cursor: ported from 21st.dev "Cursor" by unlumen (https://21st.dev/@unlumen/components/cursor).
+ * Kept: a spring-followed pointer tilted by its own velocity, a label that follows with squash
+ * and skew. Changed: the pointer is a butcher's cleaver that chops on click, the label is the
+ * row's action. Fine pointers only; touch keeps the system behaviour.
  * Every item is real: the online shop and its products come from the shop's Orderoo menu, the
  * dated posts from the shop's Facebook page.
  */
-import { useCallback, useEffect, useRef, useState } from 'react'
-import { AnimatePresence, motion, useMotionValue, useReducedMotion, useSpring } from 'motion/react'
+import { useEffect, useRef, useState } from 'react'
+import gsap from 'gsap'
+import { AnimatePresence, motion, useAnimationControls, useMotionValue, useReducedMotion, useSpring, useTransform, useVelocity } from 'motion/react'
 import { ArrowUpRight, FacebookLogo } from '@phosphor-icons/react'
 import { SHOP } from '@/lib/data'
 import { cn } from '@/lib/cn'
 import { link } from '@/lib/route'
 
-type N = { id: string; when: string; title: string; meta: string; href: string; image: string; alt: string; ext?: boolean }
+type N = { id: string; when: string; title: string; meta: string; href: string; ext?: boolean; act: string }
 const ITEMS: N[] = [
-  { id: 'online', when: 'Νέο', title: 'Παραγγέλνεις πια από εδώ', meta: 'Όλος ο πάγκος με τιμές, στο καλάθι σου. Μας λες πώς να το κόψουμε και πότε περνάς, ή σου το φέρνουμε.', href: '/paraggelia', image: '/media/gen/counter-sm.webp', alt: 'Ο πάγκος του καταστήματος' },
-  { id: 'giortes', when: 'Χριστούγεννα', title: 'Το γιορτινό τραπέζι κλείνεται νωρίς', meta: 'Γαλοπούλα, γουρουνάκι γάλακτος, αρνί και κατσίκι γάλακτος ολόκληρα ή μισά, κοκορέτσι και γαρδούμπα παραγωγής μας.', href: '#paraggelia', image: '/media/real/fb-arnia-sm.webp', alt: 'Αρνιά κρεμασμένα στο ψυγείο του καταστήματος' },
-  { id: 'spania', when: 'Στον πάγκο', title: 'Αγριογούρουνο, πετεινός Κρήτης, κουνέλι Ρεθύμνου', meta: 'Τα σπάνια του πάγκου, μαζί με γραβιέρα Κρήτης και φέτα Αμφιλοχίας.', href: '/paraggelia', image: '/media/p/cmvtxm2th003n08l2af3z4mra-sm.webp', alt: 'Πετεινός Κρήτης' },
-  { id: 'ergastirio', when: 'Εργαστήριο', title: '18 παρασκευές, φτιαγμένες εδώ', meta: 'Λουκάνικο χωριάτικο, κοντοσούβλι, ρολά γεμιστά, σουβλάκια, μπιφτέκια, και το μοσχαρίσιο σουτζούκι πικάντικο.', href: '/paraggelia', image: '/media/real/fb-loukaniko-2-sm.webp', alt: 'Χειροποίητα λουκάνικα του εργαστηρίου' },
-  { id: 'pasxa', when: '8 Απρ 2025', title: 'Σας περιμένουμε να οργανώσουμε το πασχαλινό σας τραπέζι', meta: 'Από τη σελίδα μας στο Facebook.', href: SHOP.facebook, ext: true, image: '/media/real/fb-kokoretsi-sm.webp', alt: 'Κοκορέτσι παραγωγής μας, 11,50 €' },
-  { id: 'kalokairi', when: 'Κάθε Αύγουστο', title: 'Κλειστά για λίγες μέρες καλοκαιρινών διακοπών', meta: 'Οι ημερομηνίες βγαίνουν πρώτα στο Facebook.', href: SHOP.facebook, ext: true, image: '/media/real/fb-kalokairi-sm.webp', alt: 'Ανακοίνωση καλοκαιρινών διακοπών του καταστήματος' },
+  { id: 'online', when: 'Νέο', title: 'Παραγγέλνεις πια από εδώ', meta: 'Όλος ο πάγκος με τιμές, στο καλάθι σου. Μας λες πώς να το κόψουμε και πότε περνάς, ή σου το φέρνουμε.', href: '/paraggelia', act: 'Στο καλάθι' },
+  { id: 'giortes', when: 'Χριστούγεννα', title: 'Το γιορτινό τραπέζι κλείνεται νωρίς', meta: 'Γαλοπούλα, γουρουνάκι γάλακτος, αρνί και κατσίκι γάλακτος ολόκληρα ή μισά, κοκορέτσι και γαρδούμπα παραγωγής μας.', href: '#paraggelia', act: 'Κλείσε το' },
+  { id: 'spania', when: 'Στον πάγκο', title: 'Αγριογούρουνο, πετεινός Κρήτης, κουνέλι Ρεθύμνου', meta: 'Τα σπάνια του πάγκου, μαζί με γραβιέρα Κρήτης και φέτα Αμφιλοχίας.', href: '/paraggelia', act: 'Δες τα' },
+  { id: 'ergastirio', when: 'Εργαστήριο', title: '18 παρασκευές, φτιαγμένες εδώ', meta: 'Λουκάνικο χωριάτικο, κοντοσούβλι, ρολά γεμιστά, σουβλάκια, μπιφτέκια, και το μοσχαρίσιο σουτζούκι πικάντικο.', href: '/paraggelia', act: 'Δες τα' },
+  { id: 'pasxa', when: '8 Απρ 2025', title: 'Σας περιμένουμε να οργανώσουμε το πασχαλινό σας τραπέζι', meta: 'Από τη σελίδα μας στο Facebook.', href: SHOP.facebook, ext: true, act: 'Στο Facebook' },
+  { id: 'kalokairi', when: 'Κάθε Αύγουστο', title: 'Κλειστά για λίγες μέρες καλοκαιρινών διακοπών', meta: 'Οι ημερομηνίες βγαίνουν πρώτα στο Facebook.', href: SHOP.facebook, ext: true, act: 'Στο Facebook' },
 ]
 
-const SIZE = 300
-const SPRING = { damping: 26, stiffness: 260 }
-const SKEW = { damping: 18, stiffness: 220 }
-const clamp = (v: number, a: number, b: number) => Math.min(Math.max(v, a), b)
+const SMOOTH = 0.35
+const FOLLOW = { damping: 25, stiffness: 300 }
+
+/** The cleaver: steel blade with its hole, a dark wooden handle. Hotspot = front of the edge. */
+function Cleaver() {
+  return (
+    <svg viewBox="0 0 64 44" width="88" height="61" aria-hidden>
+      <path d="M40 11.5h19.5a3.5 3.5 0 0 1 0 7H40z" fill="#9A6440" stroke="#0E0C0D" strokeWidth="1" />
+      <path d="M44 13.2h14" stroke="#C08A5E" strokeWidth="1.2" strokeLinecap="round" />
+      <circle cx="47" cy="15" r="1.1" fill="#C9C2B6" /><circle cx="54" cy="15" r="1.1" fill="#C9C2B6" />
+      <path d="M2 4.5A2.5 2.5 0 0 1 4.5 2H40v28.5c0 1.4-1 2.5-2.4 2.6L3.8 36.8A2 2 0 0 1 1.6 34.8z" fill="#D9D5CE" stroke="#0E0C0D" strokeWidth="1" />
+      <path d="M1.6 30.4 38.6 26.6 40 30.5c0 1.4-1 2.5-2.4 2.6L3.8 36.8A2 2 0 0 1 1.6 34.8z" fill="#F4F1EA" />
+      <path d="M4 3.8h34" stroke="#A9A39A" strokeWidth="1.4" strokeLinecap="round" />
+      <circle cx="33" cy="10" r="3.1" fill="#0E0C0D" />
+    </svg>
+  )
+}
 
 export default function News() {
   const reduced = useReducedMotion()
-  const [hover, setHover] = useState(false)
+  const [fine, setFine] = useState(false)
+  const [inside, setInside] = useState(false)
   const [active, setActive] = useState<number | null>(null)
-  const [source, setSource] = useState<'focus' | 'pointer' | null>(null)
-  const box = useRef<HTMLDivElement>(null)
-  const last = useRef<{ t: number; x: number } | null>(null)
-  const pending = useRef<{ x: number; y: number } | null>(null)
-  const ticking = useRef(false)
-  const x = useMotionValue(0), y = useMotionValue(0), skew = useMotionValue(0)
-  const sx = useSpring(x, SPRING), sy = useSpring(y, SPRING), sk = useSpring(skew, SKEW)
+  const list = useRef<HTMLUListElement>(null)
+  const bar = useRef<HTMLDivElement>(null)
+  const chop = useAnimationControls()
 
-  useEffect(() => { const mq = window.matchMedia('(hover: hover) and (pointer: fine)'); setHover(mq.matches); const f = (e: MediaQueryListEvent) => setHover(e.matches); mq.addEventListener('change', f); return () => mq.removeEventListener('change', f) }, [])
-  const fixed = Boolean(reduced) || !hover || source === 'focus'
+  useEffect(() => { const mq = window.matchMedia('(hover: hover) and (pointer: fine)'); setFine(mq.matches); const f = (e: MediaQueryListEvent) => setFine(e.matches); mq.addEventListener('change', f); return () => mq.removeEventListener('change', f) }, [])
+  useEffect(() => { if (bar.current) gsap.set(bar.current, { opacity: 0, y: 0, height: 0, clipPath: 'inset(0 100% 0 0)' }) }, [])
 
-  const onMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
-    if (fixed) return
-    pending.current = { x: e.clientX, y: e.clientY }
-    if (ticking.current) return
-    ticking.current = true
-    requestAnimationFrame((now) => {
-      ticking.current = false
-      const p = pending.current, el = box.current
-      if (!p || !el) return
-      const r = el.getBoundingClientRect(), lx = p.x - r.left, ly = p.y - r.top
-      let vx = 0
-      if (last.current) { const dt = Math.min(now - last.current.t, 50); if (dt > 0) vx = (lx - last.current.x) / dt }
-      last.current = { t: now, x: lx }
-      skew.set(clamp(vx * 0.12, -8, 8)); x.set(lx - SIZE / 2); y.set(ly - SIZE / 2)
-    })
-  }, [fixed, skew, x, y])
+  // Cursor (unlumen): springs on the pointer, tilt from velocity, a little squash when fast.
+  const mx = useMotionValue(-200), my = useMotionValue(-200)
+  const sx = useSpring(mx, FOLLOW), sy = useSpring(my, FOLLOW)
+  const vx = useVelocity(sx), vy = useVelocity(sy)
+  const tilt = useSpring(useTransform([vx, vy], ([a, b]) => Math.max(-35, Math.min(35, ((a as number) / 1000) * 24 + ((b as number) / 1000) * 18))), { damping: 15, stiffness: 200 })
+  const squash = useTransform([vx, vy], ([a, b]) => 1 - Math.min(Math.hypot(a as number, b as number) / 2000, 0.1))
+  const lsx = useTransform(vx, [-1000, 0, 1000], [0.9, 1, 1.15]), lsy = useTransform(vy, [-1000, 0, 1000], [1.15, 1, 0.9])
+  const lkx = useTransform(vx, [-1000, 0, 1000], [-3, 0, 3])
+  const custom = fine && !reduced
+
+  const onMove = (e: React.PointerEvent) => {
+    if (!custom) return
+    const r = list.current?.getBoundingClientRect(); if (!r) return
+    mx.set(e.clientX - r.left); my.set(e.clientY - r.top)
+    if (!inside) { sx.jump(e.clientX - r.left); sy.jump(e.clientY - r.top); setInside(true) }
+  }
+  // The row under the pointer, read on every move (more reliable than mouseenter across overlays).
+  const track = (e: React.PointerEvent) => {
+    if (!fine) return
+    const a = (e.target as Element).closest<HTMLElement>('a[data-i]')
+    if (a) { const i = Number(a.dataset.i); if (i !== active) enter(a, i) }
+  }
+
+  const enter = (el: HTMLElement, i: number) => {
+    if (!fine) return
+    const l = list.current, b = bar.current; if (!l || !b) return
+    const lr = l.getBoundingClientRect(), rr = el.getBoundingClientRect()
+    const first = active === null
+    setActive(i)
+    if (reduced) { gsap.set(b, { y: rr.top - lr.top, height: rr.height, opacity: 1, clipPath: 'inset(0 0% 0 0)' }); return }
+    if (first) gsap.set(b, { y: rr.top - lr.top, height: rr.height, opacity: 1 })
+    gsap.to(b, { y: rr.top - lr.top, height: rr.height, opacity: 1, clipPath: 'inset(0 0% 0 0)', duration: first ? 0.45 : SMOOTH, ease: first ? 'expo.out' : 'power3.out', overwrite: 'auto' })
+  }
+  const leave = () => {
+    setActive(null); setInside(false)
+    if (bar.current) gsap.to(bar.current, { opacity: 0, clipPath: 'inset(0 0 0 100%)', duration: reduced ? 0 : SMOOTH, ease: 'power2.out', overwrite: 'auto', onComplete: () => { if (bar.current) gsap.set(bar.current, { clipPath: 'inset(0 100% 0 0)' }) } })
+  }
 
   const item = active === null ? null : ITEMS[active]
 
@@ -73,35 +109,48 @@ export default function News() {
           <a href={SHOP.facebook} target="_blank" rel="noopener" className="cut-link inline-flex items-center gap-2 text-ivory"><FacebookLogo size={22} weight="bold" /> Όλα στο Facebook</a>
         </div>
 
-        <div ref={box} className="relative mt-14" onPointerMove={onMove} onPointerLeave={() => { setActive(null); setSource(null); last.current = null }} onBlur={(e) => { if (source === 'focus' && !e.currentTarget.contains(e.relatedTarget)) { setActive(null); setSource(null) } }}>
-          <ul className="border-t border-ivory/15">
-            {ITEMS.map((n, i) => (
-              <li key={n.id} className="border-b border-ivory/15">
-                <a href={n.href} onClick={n.href.startsWith('/') ? link('order') : undefined} target={n.ext ? '_blank' : undefined} rel={n.ext ? 'noopener' : undefined}
-                  onMouseEnter={() => { if (hover) { setActive(i); setSource('pointer') } }} onFocus={() => { setActive(i); setSource('focus') }}
-                  className={cn('group grid grid-cols-[84px_1fr_auto] items-center gap-4 py-5 outline-none transition-opacity duration-300 md:grid-cols-[180px_1fr_auto] md:gap-8 md:py-7', active !== null && active !== i && 'md:opacity-40')}>
-                  <span className="font-mono text-[11.5px] uppercase text-ivory/60 max-md:hidden">{n.when}</span>
-                  <img src={n.image} alt={n.alt} loading="lazy" className="aspect-square w-[84px] object-cover md:hidden" />
-                  <span className="min-w-0">
-                    <span className="font-mono text-[11px] uppercase text-ivory/60 md:hidden">{n.when}</span>
-                    <span className="block font-display text-[clamp(1.6rem,3.6vw,3.2rem)] uppercase leading-[.95] transition-colors duration-200 group-hover:text-[#E8A0A6] group-focus-visible:text-[#E8A0A6]">{n.title}</span>
-                    <span className="mt-2 block max-w-[62ch] text-[15px] text-ivory/70 md:text-base">{n.meta}</span>
-                  </span>
-                  <ArrowUpRight aria-hidden size={22} className="text-ivory/50 transition-transform duration-300 group-hover:-translate-y-1 group-hover:translate-x-1 group-hover:text-ivory" />
-                </a>
-              </li>
-            ))}
-          </ul>
+        <div className="relative mt-14">
+          <ul ref={list} className="relative border-t border-ivory/15" style={{ cursor: custom ? 'none' : undefined }}
+            onPointerMove={(e) => { onMove(e); track(e) }} onPointerLeave={leave} onPointerDown={() => { if (custom) chop.start({ rotate: [0, 38, -6, 0], y: [0, 10, 0, 0], transition: { duration: 0.32, times: [0, 0.35, 0.7, 1], ease: 'easeOut' } }) }}>
+            <div ref={bar} aria-hidden className="pointer-events-none absolute inset-x-0 top-0 z-0 bg-red max-md:hidden" />
+            {ITEMS.map((n, i) => {
+              const on = active === i
+              return (
+                <li key={n.id} className="relative z-10 border-b border-ivory/15">
+                  <a href={n.href} onClick={n.href.startsWith('/') ? link('order') : undefined} target={n.ext ? '_blank' : undefined} rel={n.ext ? 'noopener' : undefined}
+                    data-i={i} onFocus={(e) => enter(e.currentTarget, i)}
+                    style={{ cursor: custom ? 'none' : undefined }}
+                    className="group grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 py-5 outline-none md:grid-cols-[180px_minmax(0,1fr)_auto] md:gap-8 md:px-6 md:py-7">
+                    <span className={cn('font-mono text-[11.5px] uppercase transition-colors duration-300 max-md:hidden', on ? 'text-ivory' : 'text-ivory/60')}>{n.when}</span>
+                    <span className="min-w-0">
+                      <span className="font-mono text-[11px] uppercase text-ivory/60 md:hidden">{n.when}</span>
+                      <span className={cn('block font-display text-[clamp(1.6rem,3.6vw,3.2rem)] uppercase leading-[.95] transition-transform duration-300 ease-[var(--ease-expo)]', on && 'md:translate-x-3')}>{n.title}</span>
+                      <span className={cn('mt-2 block max-w-[62ch] text-[15px] transition-colors duration-300 md:text-base', on ? 'text-ivory/90' : 'text-ivory/70')}>{n.meta}</span>
+                    </span>
+                    <ArrowUpRight aria-hidden size={22} className={cn('transition-all duration-300', on ? '-translate-y-1 translate-x-1 text-ivory' : 'text-ivory/50')} />
+                  </a>
+                </li>
+              )
+            })}
 
-          <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden max-md:hidden">
-            <motion.div className={cn('absolute overflow-hidden', fixed && 'right-8 top-1/2 -translate-y-1/2')}
-              style={{ width: SIZE, height: SIZE, ...(fixed ? {} : { left: 0, top: 0, x: sx, y: sy, skewX: sk }) }}
-              initial={{ opacity: 0, scale: 0.94 }} animate={reduced ? { opacity: item ? 1 : 0 } : { opacity: item ? 1 : 0, scale: item ? 1 : 0.94 }} transition={reduced ? { duration: 0 } : { type: 'spring', bounce: 0.1, duration: 0.25 }}>
-              <AnimatePresence initial={false}>
-                {item && <motion.img key={item.id} src={item.image} alt="" className="absolute inset-0 h-full w-full object-cover" initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.96 }} transition={reduced ? { duration: 0 } : { type: 'spring', bounce: 0.1, duration: 0.25 }} />}
-              </AnimatePresence>
-            </motion.div>
-          </div>
+            {custom && (
+              <div aria-hidden className="pointer-events-none absolute inset-0 z-20 overflow-visible">
+                <motion.div className="absolute left-0 top-0" style={{ x: sx, y: sy }} animate={{ opacity: inside ? 1 : 0 }} transition={{ duration: 0.15 }}>
+                  <motion.div style={{ rotate: tilt, scale: squash, transformOrigin: '4px 47px', x: -4, y: -47 }}>
+                    <motion.div animate={chop} style={{ transformOrigin: '77px 19px' }}><Cleaver /></motion.div>
+                  </motion.div>
+                  <AnimatePresence>
+                    {item && (
+                      <motion.span key={item.act} initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }}
+                        className="absolute left-6 top-6 whitespace-nowrap bg-ivory px-2.5 py-1.5 font-mono text-[11px] uppercase text-ink" style={{ scaleX: lsx, scaleY: lsy, skewX: lkx }}>
+                        {item.act}
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
+                </motion.div>
+              </div>
+            )}
+          </ul>
         </div>
       </div>
     </section>
