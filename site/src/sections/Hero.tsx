@@ -36,6 +36,16 @@ const CLIP_A = `polygon(0 0, 100% 0, 100% ${50 - tcut + 0.4}%, 0 ${50 + tcut + 0
 const CLIP_B = `polygon(0 ${50 + tcut}%, 100% ${50 - tcut}%, 100% 100%, 0 100%)`
 
 
+/** download the whole film first, then play it from memory: it never stutters while buffering (the poster stands until then) */
+const films = new Map<string, Promise<string>>()
+function loadFilm(v: HTMLVideoElement | null, url: string, play = true) {
+  if (!v) return
+  v.muted = true
+  let p = films.get(url)
+  if (!p) { p = fetch(url).then((r) => r.blob()).then((b) => URL.createObjectURL(b)); films.set(url, p) }
+  p.then((src) => { if (v.src !== src) v.src = src; if (play) v.play().catch(() => { /* the poster stands */ }) }, () => { v.src = url; if (play) v.play().catch(() => {}) })
+}
+
 export default function Hero() {
   const section = useRef<HTMLElement>(null)
   const stage = useRef<HTMLDivElement>(null)
@@ -77,12 +87,14 @@ export default function Hero() {
       const lane = async () => { while (alive && next < TFRAMES - 1) await one(next++) }
       await Promise.all(Array.from({ length: 6 }, lane))
     }
-    // start once the film can play through (or after 2.5 s at the latest), so the film never starves
+    // start once the film can play through (or after 6 s at the latest), so the film never starves
     let t = 0, started = false
     const start = () => { if (started) return; started = true; window.clearTimeout(t); run() }
     const v = video.current
     v?.addEventListener('canplaythrough', start, { once: true })
-    t = window.setTimeout(start, 2500)
+    t = window.setTimeout(start, 6000)
+    // the film starts downloading now, behind the preloader; it plays on «Μπες»
+    loadFilm(v, '/media/cleaver.mp4', false)
     const cache = frames.current
     return () => { alive = false; window.clearTimeout(t); v?.removeEventListener('canplaythrough', start); cache.forEach((f) => { if ('close' in f) f.close() }); cache.clear() }
   }, [reduced, phone])
@@ -114,7 +126,7 @@ export default function Hero() {
       tl.fromTo(line.current, { scaleX: 0 }, { scaleX: 1, duration: 1, ease: 'expo.inOut' }, 0.9)
       tl.fromTo([sub.current, cta.current], { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.8, stagger: 0.1 }, 1)
       tl.fromTo(hint.current, { opacity: 0 }, { opacity: 1, duration: 0.8 }, 2.2)
-      const start = () => { tl.play(); if (video.current) { video.current.play().catch(() => {}) } }
+      const start = () => { tl.play(); loadFilm(video.current, '/media/cleaver.mp4') }
       if (sessionStorage.getItem('tram-seen')) start()
       else window.addEventListener('tram:enter', start, { once: true })
       return () => window.removeEventListener('tram:enter', start)
@@ -155,7 +167,7 @@ export default function Hero() {
       fit()
       window.addEventListener('resize', fit)
       const ride = { p: 0 }
-      const tl = gsap.timeline({ scrollTrigger: { trigger: section.current, start: 'top top', end: 'bottom bottom', scrub: 0.45, invalidateOnRefresh: true, onRefresh: fit, onLeaveBack: () => { const v = video.current; if (v) { v.currentTime = 0; v.play().catch(() => {}) } } } })
+      const tl = gsap.timeline({ scrollTrigger: { trigger: section.current, start: 'top top', end: 'bottom bottom', scrub: 0.2, invalidateOnRefresh: true, onRefresh: fit, onLeaveBack: () => { const v = video.current; if (v) { v.currentTime = 0; v.play().catch(() => {}) } } } })
       tl.to(copy.current, { opacity: 0, ease: 'none', duration: 0.08 }, 0)
       tl.to(hint.current, { opacity: 0, ease: 'none', duration: 0.04 }, 0)
       tl.set([halfA.current, halfB.current], { autoAlpha: 1 }, 0.04)
@@ -209,10 +221,7 @@ export default function Hero() {
           </div>
         ) : (
           <>
-            <video ref={video} className="absolute inset-0 h-full w-full object-cover" poster="/media/cleaver-poster.jpg" muted playsInline preload="auto">
-              <source src="/media/cleaver-720.mp4" media="(max-width: 767px)" type="video/mp4" />
-              <source src="/media/cleaver.mp4" type="video/mp4" />
-            </video>
+            <video ref={video} className="absolute inset-0 h-full w-full object-cover" poster="/media/cleaver-poster.jpg" muted playsInline preload="none" />
             <div className="pointer-events-none absolute inset-0">
               {Array.from({ length: STRIPS }, (_, i) => (
                 <div key={i} ref={(el) => { strips.current[i] = el }} className="absolute inset-y-0 bg-ink" style={{ left: `${i * w}%`, width: `${w + 0.1}%`, clipPath: 'inset(0 0 0 0)' }} />
@@ -266,7 +275,7 @@ function PhoneHero({ prints }: { prints: Print[] }) {
   const [seen, setSeen] = useState(false)
   useEffect(() => {
     // iOS only autoplays a video that is muted as a property, not just as an attribute
-    const v = film.current; if (v) { v.muted = true; v.play().catch(() => { /* the poster stands */ }) }
+    loadFilm(film.current, '/media/cleaver-720.mp4')
     // between the hero and the prints the page never rests half way: once the finger is up and the
     // scroll has stopped, it settles on the prints going down, or on the hero going up. Waiting for
     // the scroll to stop means the page never fights the finger.
@@ -293,7 +302,7 @@ function PhoneHero({ prints }: { prints: Print[] }) {
   return (
     <section id="hero" data-theme="dark" className="relative bg-ink text-ivory" aria-label="Παραδοσιακό Κρεοπωλείο Το Τραμ, Πειραιάς">
       <div className="relative h-[100svh] overflow-hidden">
-        <motion.video ref={film} className="absolute inset-x-0 top-0 h-[64%] w-full object-cover object-[56%_50%]" poster="/media/cleaver-poster.jpg" src="/media/cleaver-720.mp4" autoPlay muted loop playsInline preload="auto" aria-label="Ο μπαλτάς κόβει τα παϊδάκια στον ξύλινο κορμό" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 1 }} />
+        <motion.video ref={film} className="absolute inset-x-0 top-0 h-[64%] w-full object-cover object-[56%_50%]" poster="/media/cleaver-poster.jpg" muted loop playsInline preload="none" aria-label="Ο μπαλτάς κόβει τα παϊδάκια στον ξύλινο κορμό" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 1 }} />
         <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-ink from-36% via-ink/40 via-52% to-transparent to-75%" />
         <div className="absolute inset-x-5 bottom-8">
           <motion.h1 className="font-display text-[26vw] uppercase leading-[.82]" initial={{ y: 40, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.9, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}>Το Τραμ</motion.h1>

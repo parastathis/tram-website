@@ -9,7 +9,7 @@ export function initSmooth() {
   if (lenis) return lenis
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
   if (reduced) return null
-  lenis = new Lenis({ lerp: 0.09, syncTouch: false, wheelMultiplier: 1 })
+  lenis = new Lenis({ lerp: 0.14, syncTouch: false, wheelMultiplier: 1 })
   lenis.on('scroll', ScrollTrigger.update)
   gsap.ticker.add((t) => lenis?.raf(t * 1000))
   gsap.ticker.lagSmoothing(0)
