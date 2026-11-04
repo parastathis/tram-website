@@ -17,7 +17,7 @@ import { cn } from '@/lib/cn'
 
 type N = { id: string; when: string; title: string; meta: string; href: string; image: string; alt: string; ext?: boolean }
 const ITEMS: N[] = [
-  { id: 'online', when: 'Νέο', title: 'Παραγγέλνεις πια από εδώ', meta: 'Όλος ο πάγκος με τιμές, στο καλάθι σου. Μας λες πώς να το κόψουμε και πότε περνάς, ή σου το φέρνουμε.', href: '#pagkos', image: '/media/real/counter-sm.webp', alt: 'Ο πάγκος του καταστήματος' },
+  { id: 'online', when: 'Νέο', title: 'Παραγγέλνεις πια από εδώ', meta: 'Όλος ο πάγκος με τιμές, στο καλάθι σου. Μας λες πώς να το κόψουμε και πότε περνάς, ή σου το φέρνουμε.', href: '#pagkos', image: '/media/gen/counter-sm.webp', alt: 'Ο πάγκος του καταστήματος' },
   { id: 'giortes', when: 'Χριστούγεννα', title: 'Το γιορτινό τραπέζι κλείνεται νωρίς', meta: 'Γαλοπούλα, γουρουνάκι γάλακτος, αρνί και κατσίκι γάλακτος ολόκληρα ή μισά, κοκορέτσι και γαρδούμπα παραγωγής μας.', href: '#paraggelia', image: '/media/real/fb-arnia-sm.webp', alt: 'Αρνιά κρεμασμένα στο ψυγείο του καταστήματος' },
   { id: 'spania', when: 'Στον πάγκο', title: 'Αγριογούρουνο, πετεινός Κρήτης, κουνέλι Ρεθύμνου', meta: 'Τα σπάνια του πάγκου, μαζί με γραβιέρα Κρήτης και φέτα Αμφιλοχίας.', href: '#pagkos', image: '/media/p/cmvtxm2th003n08l2af3z4mra-sm.webp', alt: 'Πετεινός Κρήτης' },
   { id: 'ergastirio', when: 'Εργαστήριο', title: '18 παρασκευές, φτιαγμένες εδώ', meta: 'Λουκάνικο χωριάτικο, κοντοσούβλι, ρολά γεμιστά, σουβλάκια, μπιφτέκια, και το μοσχαρίσιο σουτζούκι πικάντικο.', href: '#pagkos', image: '/media/real/fb-loukaniko-2-sm.webp', alt: 'Χειροποίητα λουκάνικα του εργαστηρίου' },

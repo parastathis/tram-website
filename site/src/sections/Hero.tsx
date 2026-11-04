@@ -31,9 +31,9 @@ const CLIP_B = `polygon(0 ${50 + tcut}%, 100% ${50 - tcut}%, 100% 100%, 0 100%)`
 
 const DOORS = [
   { n: '01', label: 'Ο πάγκος', sub: '84 είδη με τιμές, παραγγελία online', href: '#pagkos', src: '/media/p/cmvtxlxlk000808l2epj2d90r.webp' },
-  { n: '02', label: 'Το μαγαζί', sub: 'Σπάρτης & Σαλαμίνος, από το 1983', href: '#magazi', src: '/media/real/front-m-sm.webp' },
+  { n: '02', label: 'Το μαγαζί', sub: 'Σπάρτης & Σαλαμίνος, από το 1983', href: '#magazi', src: '/media/gen/front-m.webp' },
   { n: '03', label: 'Ο Ιπποκράτης', sub: 'Κόβει μπροστά σου', href: '#ippokratis', src: '/media/gen/ippokratis-studio-wide.webp' },
-  { n: '04', label: 'Νέα', sub: 'Γιορτές, νέα είδη, ανακοινώσεις', href: '#nea', src: '/media/real/interior-sm.webp' },
+  { n: '04', label: 'Νέα', sub: 'Γιορτές, νέα είδη, ανακοινώσεις', href: '#nea', src: '/media/gen/interior-t.webp' },
 ]
 
 export default function Hero() {

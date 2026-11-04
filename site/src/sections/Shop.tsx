@@ -18,16 +18,18 @@ const ROWS = [
   ['Κοπή', 'Σαλαμίνος 124, Πειραιάς'],
 ]
 
-type Tile = { src: string; alt: string; cap: string; span: string; ratio: string }
+type Tile = { src: string; alt: string; cap: string; span: string; ratio: string; pos?: string }
 const R = (n: string) => `/media/real/${n}.webp`
+/** editorial photos made from the shop's own Drive photos (scripts/gen.py) */
+const G = (n: string) => `/media/gen/${n}.webp`
 const TILES: Tile[] = [
-  { src: R('interior'), alt: 'Το εσωτερικό του καταστήματος με την κυρτή βιτρίνα', cap: 'Η βιτρίνα, κάθε πρωί από τις 7', span: 'md:col-span-7', ratio: 'aspect-[4/5] md:aspect-auto md:min-h-full' },
-  { src: R('bag'), alt: 'Η σακούλα του καταστήματος με το κόκκινο τραμ', cap: 'Η σακούλα με το βαγόνι', span: 'md:col-span-5', ratio: 'aspect-[4/5]' },
-  { src: R('clock'), alt: 'Το ρολόι του καταστήματος με το τραμ', cap: 'Το ρολόι του μαγαζιού', span: 'md:col-span-4', ratio: 'aspect-[4/5]' },
+  { src: G('interior'), alt: 'Το εσωτερικό του καταστήματος με την κυρτή βιτρίνα', cap: 'Η βιτρίνα, κάθε πρωί από τις 7', span: 'md:col-span-7', ratio: 'aspect-[4/5] md:aspect-auto md:min-h-full', pos: 'object-[68%_50%] md:object-center' },
+  { src: G('bag'), alt: 'Η σακούλα του καταστήματος με το κόκκινο τραμ', cap: 'Η σακούλα με το βαγόνι', span: 'md:col-span-5', ratio: 'aspect-[4/5]' },
+  { src: G('clock'), alt: 'Το ρολόι του καταστήματος με το τραμ', cap: 'Το ρολόι του μαγαζιού', span: 'md:col-span-4', ratio: 'aspect-[4/5]' },
   { src: R('boats'), alt: 'Καΐκι στο ράφι πάνω από τη βιτρίνα', cap: 'Τα καΐκια στο ράφι', span: 'md:col-span-4', ratio: 'aspect-[4/5]' },
   { src: R('label-hand'), alt: 'Μοσχάρι με την ετικέτα ιχνηλασιμότητας', cap: 'Κάθε κομμάτι με την ετικέτα του', span: 'md:col-span-4', ratio: 'aspect-[4/5]' },
-  { src: R('aisle'), alt: 'Ράφια και ψυγεία του καταστήματος', cap: 'Ψυγεία, ράφια, μαναβική', span: 'md:col-span-5', ratio: 'aspect-[4/5]' },
-  { src: R('farm-box'), alt: 'Κιβώτιο της Φάρμας Ελασσόνας', cap: 'Από τη Φάρμα Ελασσόνας', span: 'md:col-span-7', ratio: 'aspect-[4/5] md:aspect-auto md:min-h-full' },
+  { src: G('workshop'), alt: 'Το εργαστήριο με τον κορμό, τη μηχανή του κιμά και τα λουκάνικα', cap: 'Το εργαστήριο, εδώ γίνονται τα λουκάνικα', span: 'md:col-span-5', ratio: 'aspect-[4/5]' },
+  { src: G('farm-box'), alt: 'Κιβώτιο της Φάρμας Ελασσόνας', cap: 'Από τη Φάρμα Ελασσόνας', span: 'md:col-span-7', ratio: 'aspect-[4/5] md:aspect-auto md:min-h-full', pos: 'object-[26%_50%] md:object-center' },
 ]
 
 function Frame({ t, i }: { t: Tile; i: number }) {
@@ -36,7 +38,7 @@ function Frame({ t, i }: { t: Tile; i: number }) {
   return (
     <motion.figure ref={ref} className={`relative overflow-hidden bg-ivory-2 ${t.span} ${t.ratio}`} initial={{ clipPath: 'inset(100% 0 0 0)' }} animate={show ? { clipPath: 'inset(0% 0 0 0)' } : {}} transition={{ duration: 1.1, delay: (i % 3) * 0.08, ease: [0.76, 0, 0.24, 1] }}>
       <div className="absolute inset-0">
-        <img src={t.src.replace('.webp', '-sm.webp')} srcSet={`${t.src.replace('.webp', '-sm.webp')} 820w, ${t.src} 1800w`} sizes="(min-width: 768px) 50vw, 100vw" alt={t.alt} className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
+        <img src={t.src.replace('.webp', '-sm.webp')} srcSet={`${t.src.replace('.webp', '-sm.webp')} 820w, ${t.src} 1600w`} sizes="(min-width: 768px) 50vw, 100vw" alt={t.alt} className={`absolute inset-0 h-full w-full object-cover ${t.pos ?? ''}`} loading="lazy" />
       </div>
       <figcaption className="absolute bottom-3 left-3 bg-ivory px-3 py-1 font-mono text-[12px] text-ink">{t.cap}</figcaption>
     </motion.figure>
@@ -59,8 +61,8 @@ export default function Shop() {
         <motion.div className="absolute inset-0" initial={{ clipPath: 'inset(49.5% 0 49.5% 0)' }} animate={open ? { clipPath: 'inset(0% 0 0% 0)' } : {}} transition={{ duration: 1.3, ease: [0.76, 0, 0.24, 1] }}>
           <motion.div className="absolute inset-x-0 -inset-y-[8%]" style={{ y, scale }}>
             <picture>
-              <source media="(max-width: 767px)" srcSet="/media/real/interior-sm.webp" />
-              <img src="/media/real/counter.webp" alt="Ο πάγκος και το εργαστήριο του καταστήματος" className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
+              <source media="(max-width: 767px)" srcSet="/media/gen/interior-m.webp" />
+              <img src="/media/gen/counter.webp" alt="Ο πάγκος και το εργαστήριο του καταστήματος" className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
             </picture>
           </motion.div>
           <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-ink/85 via-ink/10 to-ink/20" />

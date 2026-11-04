@@ -145,7 +145,7 @@ export default function Nav({ dark }: { dark: boolean }) {
               ))}
             </div>
             <div className="flex items-end gap-6 max-[1025px]:w-full max-[1025px]:flex-row">
-              {['/media/real/interior-sm.webp', '/media/real/bag-sm.webp'].map((src, i) => (
+              {['/media/gen/counter-sm.webp', '/media/gen/front-sm.webp'].map((src, i) => (
                 <div key={src} ref={(el) => { imgs.current[i] = el }} className="relative h-[16vw] w-[22vw] overflow-hidden max-[1025px]:h-[28vw] max-[1025px]:w-1/2" style={{ opacity: 0 }}>
                   <img src={src} alt="" className="absolute inset-0 h-full w-full object-cover" />
                 </div>
