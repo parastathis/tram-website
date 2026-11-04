@@ -6,8 +6,10 @@
  * last frame is cut on the cleaver's diagonal and the halves slide away; out of the gap comes the
  * shop's tram (generated film, Veo 3.1 from the head-on Nano Banana picture, scrubbed frame by
  * frame so it follows the hand), it drives straight at you until its headlamp fills the screen,
- * crashes into the glass (shake and flash), and behind the flash stands the departure board: two
- * lines leave from here, Παράγγειλε τώρα and Το μαγαζί. Reduced motion: the still, the title, the board.
+ * crashes into the glass (shake and flash), and behind the flash hang two prints on a string: two
+ * lines leave from here, Παράγγειλε τώρα and Το μαγαζί (tap selects, tap again goes). The tram
+ * frames stay compressed and only the dozen around the playhead are decoded. Reduced motion: the still,
+ * the title, the prints.
  */
 import { useEffect, useRef, useState } from 'react'
 import gsap from 'gsap'
@@ -16,9 +18,9 @@ import Btn from '@/components/Btn'
 import { SHOP } from '@/lib/data'
 import { getLenis } from '@/lib/smooth'
 import { link, ORDER_PATH } from '@/lib/route'
-import FlapText from '@/components/FlapBoard'
+import LinePicker from '@/components/LinePicker'
+import { goTo } from '@/lib/route'
 import { cn } from '@/lib/cn'
-import { ArrowRight } from '@phosphor-icons/react'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -32,11 +34,6 @@ const tcut = Math.tan((CUT * Math.PI) / 180) * 50
 const CLIP_A = `polygon(0 0, 100% 0, 100% ${50 - tcut + 0.4}%, 0 ${50 + tcut + 0.4}%)`
 const CLIP_B = `polygon(0 ${50 + tcut}%, 100% ${50 - tcut}%, 100% 100%, 0 100%)`
 
-/** the departure board after the crash: two lines leave from this terminus */
-const LINES = [
-  { n: '1', name: 'Παράγγειλε τώρα', sub: 'Όλος ο πάγκος με τιμές, σε δύο βήματα', when: 'Τώρα', order: true, href: ORDER_PATH },
-  { n: '2', name: 'Το μαγαζί', sub: 'Τα κρέατα, ο Ιπποκράτης, από το 1983', when: 'Με τα πόδια', order: false, href: '#kreata' },
-]
 
 export default function Hero() {
   const section = useRef<HTMLElement>(null)
@@ -52,42 +49,55 @@ export default function Hero() {
   const halfB = useRef<HTMLDivElement>(null)
   const shade = useRef<HTMLDivElement>(null)
   const tram = useRef<HTMLCanvasElement>(null)
-  const frames = useRef<(ImageBitmap | HTMLImageElement | null)[]>([])
+  // the tram film as compressed frames (~5 MB); only the few around the playhead are decoded
+  const blobs = useRef<(Blob | null)[]>([])
+  const frames = useRef<Map<number, ImageBitmap | HTMLImageElement>>(new Map())
+  const decoding = useRef<Set<number>>(new Set())
+  const decodeW = useRef(1280)
   const flash = useRef<HTMLDivElement>(null)
   const hub = useRef<HTMLDivElement>(null)
   const doors = useRef<(HTMLAnchorElement | null)[]>([])
   const [board, setBoard] = useState(false)
-  const [clock, setClock] = useState('')
-  useEffect(() => { const f = () => setClock(new Date().toLocaleTimeString('el-GR', { hour: '2-digit', minute: '2-digit' })); f(); const id = setInterval(f, 20000); return () => clearInterval(id) }, [])
   const hubHead = useRef<HTMLDivElement>(null)
   const hint = useRef<HTMLDivElement>(null)
   const [reduced] = useState(() => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches)
   const [phone] = useState(() => typeof window !== 'undefined' && window.matchMedia('(max-width: 767px)').matches)
 
-  // decode the tram frames up front (bitmaps, so a scrub is a blit, not a decode); desktop only
+  // fetch the tram frames once as compressed blobs; decoding happens on demand (see want())
   useEffect(() => {
     if (reduced) return
     let alive = true
     const one = async (i: number) => {
-      try {
-        const r = await fetch(tframe(i))
-        const b = await r.blob()
-        const bm = 'createImageBitmap' in window ? await createImageBitmap(b) : await new Promise<HTMLImageElement>((ok, no) => { const im = new Image(); im.onload = () => ok(im); im.onerror = no; im.src = URL.createObjectURL(b) })
-        if (alive) frames.current[i] = bm
-      } catch { /* a missing frame falls back to the nearest one */ }
+      try { const r = await fetch(tframe(i)); const bl = await r.blob(); if (alive) blobs.current[i] = bl } catch { /* the nearest frame stands in */ }
     }
     const run = async () => {
-      // first and last frames first, then the rest in order, three at a time
       await Promise.all([one(0), one(TFRAMES - 1)])
-      for (let i = 1; i < TFRAMES - 1 && alive; i += 3) await Promise.all([one(i), one(i + 1), one(i + 2)].filter(Boolean))
+      for (let i = 1; i < TFRAMES - 1 && alive; i += 4) await Promise.all([one(i), one(i + 1), one(i + 2), one(i + 3)])
     }
-    // wait for the film to be playing before pulling 2 MB of frames, so the film never starves
+    // wait for the film to be playing before pulling the frames, so the film never starves
     let t = 0
     const start = () => { t = window.setTimeout(run, 1200) }
     if (sessionStorage.getItem('tram-seen')) start()
     else window.addEventListener('tram:enter', start, { once: true })
-    return () => { alive = false; window.clearTimeout(t); window.removeEventListener('tram:enter', start) }
+    const cache = frames.current
+    return () => { alive = false; window.clearTimeout(t); window.removeEventListener('tram:enter', start); cache.forEach((f) => { if ('close' in f) f.close() }); cache.clear() }
   }, [reduced, phone])
+
+  /** decode frame i (scaled to the canvas) and keep at most 12 decoded, the rest stay compressed */
+  const want = (i: number, redraw: () => void) => {
+    const bl = blobs.current[i]
+    if (!bl || frames.current.has(i) || decoding.current.has(i)) return
+    decoding.current.add(i)
+    const done = (f: ImageBitmap | HTMLImageElement) => {
+      decoding.current.delete(i)
+      const m = frames.current
+      m.set(i, f)
+      if (m.size > 12) { let far = -1, d = -1; m.forEach((_, k) => { const dd = Math.abs(k - i); if (dd > d) { d = dd; far = k } }); const f2 = m.get(far); if (f2 && 'close' in f2) f2.close(); m.delete(far) }
+      redraw()
+    }
+    if ('createImageBitmap' in window) createImageBitmap(bl, { resizeWidth: decodeW.current, resizeQuality: 'medium' }).then(done, () => decoding.current.delete(i))
+    else { const im = new Image(); im.onload = () => done(im); im.onerror = () => decoding.current.delete(i); im.src = URL.createObjectURL(bl) }
+  }
 
   // entry: strips off the film, the film plays through once and holds the landed blade
   useEffect(() => {
@@ -116,15 +126,19 @@ export default function Hero() {
       let last = -1
       const fit = () => {
         const c = tram.current; if (!c) return
-        const dpr = Math.min(window.devicePixelRatio || 1, 1.5)
+        const dpr = Math.min(window.devicePixelRatio || 1, 1.25)
         c.width = Math.round(c.clientWidth * dpr); c.height = Math.round(c.clientHeight * dpr)
+        decodeW.current = Math.min(IS_PHONE ? 1280 : 1920, Math.max(640, Math.round(Math.max(c.width, c.height * 16 / 9))))
         last = -1
       }
       const draw = (p: number) => {
         const c = tram.current; if (!c) return
-        let idx = Math.min(TFRAMES - 1, Math.max(0, Math.round(p * (TFRAMES - 1))))
-        while (idx > 0 && !frames.current[idx]) idx--
-        const f = frames.current[idx]
+        const want_ = Math.min(TFRAMES - 1, Math.max(0, Math.round(p * (TFRAMES - 1))))
+        const redraw = () => { last = -1; draw(ride.p) }
+        for (let k = -2; k <= 3; k++) want(Math.min(TFRAMES - 1, Math.max(0, want_ + k)), redraw)
+        let idx = want_, best: ImageBitmap | HTMLImageElement | undefined
+        for (let k = 0; k < TFRAMES && !best; k++) { best = frames.current.get(want_ - k) ?? frames.current.get(want_ + k); if (best) idx = frames.current.has(want_ - k) ? want_ - k : want_ + k }
+        const f = best
         if (!f || idx === last) return
         last = idx
         const ctx2 = c.getContext('2d'); if (!ctx2) return
@@ -156,7 +170,7 @@ export default function Hero() {
       tl.fromTo(doors.current.filter(Boolean), { yPercent: 100 }, { yPercent: 0, ease: 'power3.out', duration: 0.22, stagger: 0.035 }, 0.64)
       tl.to(flash.current, { opacity: 0, ease: 'power2.out', duration: 0.18 }, 0.66)
       tl.fromTo(hubHead.current, { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.14 }, 0.78)
-      tl.eventCallback('onUpdate', () => setBoard(tl.progress() > 0.66))
+      tl.eventCallback('onUpdate', () => setBoard(tl.progress() > 0.6))
       return () => window.removeEventListener('resize', fit)
     }, section)
     return () => ctx.revert()
@@ -216,29 +230,18 @@ export default function Hero() {
           </>
         )}
 
-        {/* the departure board: two lines into the site */}
-        <div ref={hub} className={cn('absolute inset-0 z-20 flex flex-col justify-center bg-ink px-5 md:px-8', !reduced && 'invisible')}>
-          <div ref={hubHead} className="mx-auto flex w-full max-w-[1280px] items-end justify-between border-b border-ivory/20 pb-3">
-            <p className="font-display text-2xl uppercase tracking-wide text-ivory md:text-3xl">Αναχωρήσεις <span className="text-ivory/50">· Τέρμα Κοπή</span></p>
-            <p className="font-mono text-[13px] tabular-nums text-ivory/70">{clock}</p>
+        {/* two prints on a string: pick a line */}
+        <div ref={hub} className={cn('absolute inset-0 z-20 flex flex-col bg-ink', !reduced && 'invisible')}>
+          <div ref={hubHead} className="flex items-end justify-between px-5 pt-20 md:px-8 md:pt-24">
+            <p className="font-display text-2xl uppercase tracking-wide text-ivory md:text-3xl">Τέρμα. <span className="text-ivory/55">Πού πας;</span></p>
+            <p className="hidden font-mono text-[12px] text-ivory/60 md:block">{SHOP.address} · Κοπή, Πειραιάς</p>
           </div>
-          <nav aria-label="Γραμμές" className="mx-auto w-full max-w-[1280px] overflow-hidden">
-            {LINES.map((l, i) => (
-              <a key={l.n} ref={(el) => { doors.current[i] = el }} href={l.href} onClick={l.order ? link('order') : go(l.href)}
-                className={cn('group grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-4 border-b border-ivory/15 py-5 no-underline md:gap-8 md:py-8', l.order ? 'text-ivory' : 'text-ivory/85')}>
-                <span className={cn('flex h-12 w-12 items-center justify-center font-display text-3xl md:h-20 md:w-20 md:text-5xl', l.order ? 'bg-red text-ivory' : 'border-2 border-ivory/60 text-ivory')}>{l.n}</span>
-                <span className="min-w-0">
-                  <FlapText text={l.name} play={board || reduced} stagger={l.order ? 40 : 55} className="font-display text-[clamp(1.2rem,5.2vw,6rem)] uppercase leading-none text-ivory" />
-                  <span className="mt-2 block font-mono text-[11.5px] text-ivory/65 md:text-[13px]">{l.sub}</span>
-                </span>
-                <span className="flex flex-col items-end gap-2">
-                  <span className={cn('font-mono text-[11px] uppercase tracking-[.12em] md:text-[12.5px]', l.order ? 'text-[#E8A0A6]' : 'text-ivory/60')}>{l.when}</span>
-                  <ArrowRight size={26} weight="bold" className="transition-transform duration-300 group-hover:translate-x-1.5" />
-                </span>
-              </a>
-            ))}
-          </nav>
-          <p className="mx-auto mt-4 w-full max-w-[1280px] font-mono text-[11.5px] text-ivory/55">{SHOP.address} · Κοπή, Πειραιάς · {SHOP.phone}</p>
+          <div ref={(el) => { doors.current[0] = el as unknown as HTMLAnchorElement }} className="relative min-h-0 flex-1">
+            <LinePicker running={board || reduced} prints={[
+              { image: '/media/gen/counter-sm.webp', note: 'παράγγειλε τώρα', title: 'Παράγγειλε τώρα', caption: 'Όλος ο πάγκος με τιμές, σε δύο βήματα. Πληρώνεις όταν παραλάβεις.', cta: 'Στον πάγκο', alt: 'Ο πάγκος του καταστήματος γεμάτος κρέατα', go: () => goTo('order') },
+              { image: '/media/gen/front-m.webp', note: 'το μαγαζί', title: 'Το μαγαζί', caption: 'Τα κρέατα, ο Ιπποκράτης, από το 1983 στη Σπάρτης & Σαλαμίνος.', cta: 'Μπες μέσα', alt: 'Η πρόσοψη του Τραμ', go: () => { const el = document.getElementById('kreata'); const l = getLenis(); if (el) l ? l.scrollTo(el, { duration: 1.4 }) : el.scrollIntoView({ behavior: 'smooth' }) } },
+            ]} />
+          </div>
         </div>
         {/* the flash of the crash, above everything */}
         {!reduced && <div ref={flash} className="pointer-events-none absolute inset-0 z-30 opacity-0" style={{ background: 'radial-gradient(circle at 50% 50%, #FFF3D6 0%, #F2D9A6 45%, #EFEAE0 100%)' }} />}

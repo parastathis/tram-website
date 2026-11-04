@@ -53,3 +53,4 @@ img { max-width: 100%; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; scroll-behavior: auto !important; }
 }
+@keyframes plIn { from { transform: translateY(40%); opacity: 0 } to { transform: none; opacity: 1 } }
