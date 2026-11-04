@@ -36,7 +36,7 @@ export default function LinePicker({ prints, running, initial = 0 }: { prints: P
 
   useEffect(() => {
     const el = root.current; if (!el) return
-    const ro = new ResizeObserver(() => { const r = el.getBoundingClientRect(); setSize({ w: r.width, h: r.height, cw: Math.round(Math.max(140, Math.min(320, r.width * 0.4, r.height * 0.46))) }) })
+    const ro = new ResizeObserver(() => { const r = el.getBoundingClientRect(); setSize({ w: r.width, h: r.height, cw: Math.round(Math.max(140, Math.min(320, r.width * (r.width < 640 ? 0.44 : 0.4), r.height * 0.46))) }) })
     ro.observe(el); return () => ro.disconnect()
   }, [])
   useEffect(() => { sim.current.target = activeRef.current * spacing; sim.current.off = activeRef.current * spacing }, [spacing])
@@ -59,7 +59,7 @@ export default function LinePicker({ prints, running, initial = 0 }: { prints: P
       else { const before = S.off; [S.off, S.vel] = springStep(S.off, S.vel, S.target, dt); lineVel = -(S.off - before) / Math.max(dt, 1e-3) }
       const g = reduce ? 0 : 1
       if (S.kick) { lineVel += S.kick * -600; S.kick *= 0.82; if (Math.abs(S.kick) < 0.01) S.kick = 0 }
-      const shift = (S.off - ((n - 1) * spacing) / 2) * 0.35
+      const shift = (S.off - ((n - 1) * spacing) / 2) * (w < 640 ? 0.2 : 0.35)
       const near = clamp(Math.round(S.off / spacing), 0, n - 1)
       for (let i = 0; i < n; i++) {
         const c = cards.current[i]; if (!c) continue

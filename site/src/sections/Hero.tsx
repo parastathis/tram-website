@@ -259,29 +259,34 @@ function PhoneHero({ prints }: { prints: Print[] }) {
   const cards = useRef<HTMLDivElement>(null)
   const [seen, setSeen] = useState(false)
   useEffect(() => {
-    // one downward move from the hero carries you to the prints; scrolling back up is left alone
-    let lastY = window.scrollY, busy = false
-    const onScroll = () => {
-      const y = window.scrollY, el = cards.current
-      if (!el) return
-      const top = el.getBoundingClientRect().top + y
-      if (!busy && y > lastY && y > 8 && y < top - 8) {
-        busy = true
-        const l = getLenis(); if (l) l.scrollTo(top, { duration: 0.9 }); else window.scrollTo({ top, behavior: 'smooth' })
-        window.setTimeout(() => { busy = false }, 900)
-      }
-      lastY = y
+    // between the hero and the prints the page never rests half way: once the finger is up and the
+    // scroll has stopped, it settles on the prints going down, or on the hero going up. Waiting for
+    // the scroll to stop means the page never fights the finger.
+    let t = 0, touching = false, last = window.scrollY, dir = 1
+    const top = () => (cards.current ? cards.current.getBoundingClientRect().top + window.scrollY : 0)
+    const settle = () => {
+      if (touching) return
+      const y = window.scrollY, c = top()
+      if (y <= 2 || y >= c - 2) return
+      const to = dir > 0 ? c : 0
+      const l = getLenis(); if (l) l.scrollTo(to, { duration: 0.6 }); else window.scrollTo({ top: to, behavior: 'smooth' })
     }
+    const onScroll = () => { const y = window.scrollY; if (y !== last) dir = y > last ? 1 : -1; last = y; clearTimeout(t); t = window.setTimeout(settle, 140) }
+    const down = () => { touching = true; clearTimeout(t) }
+    const up = () => { touching = false; clearTimeout(t); t = window.setTimeout(settle, 140) }
     window.addEventListener('scroll', onScroll, { passive: true })
-    const io = new IntersectionObserver(([e]) => { if (e.isIntersecting) setSeen(true) }, { threshold: 0.4 })
+    window.addEventListener('touchstart', down, { passive: true })
+    window.addEventListener('touchend', up, { passive: true })
+    window.addEventListener('touchcancel', up, { passive: true })
+    const io = new IntersectionObserver(([e]) => { if (e.isIntersecting) setSeen(true) }, { threshold: 0.3 })
     if (cards.current) io.observe(cards.current)
-    return () => { window.removeEventListener('scroll', onScroll); io.disconnect() }
+    return () => { clearTimeout(t); window.removeEventListener('scroll', onScroll); window.removeEventListener('touchstart', down); window.removeEventListener('touchend', up); window.removeEventListener('touchcancel', up); io.disconnect() }
   }, [])
   return (
     <section id="hero" data-theme="dark" className="relative bg-ink text-ivory" aria-label="Παραδοσιακό Κρεοπωλείο Το Τραμ, Πειραιάς">
       <div className="relative h-[100svh] overflow-hidden">
-        <motion.img src={LAST} alt="Ο μπαλτάς στον ξύλινο πάγκο του Τραμ" className="absolute inset-0 h-full w-full object-cover" initial={{ scale: 1.12, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ duration: 1.4, ease: [0.22, 1, 0.36, 1] }} />
-        <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-ink/80 via-ink/10 to-ink/40" />
+        <motion.img src="/media/gen/tram-front.webp" alt="Το τραμ με την πινακίδα «Το Τραμ» και το φανάρι αναμμένο" fetchPriority="high" className="absolute inset-x-0 top-0 h-[78%] w-full object-cover object-[50%_20%]" initial={{ scale: 1.08, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ duration: 1.6, ease: [0.22, 1, 0.36, 1] }} />
+        <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-ink via-ink/60 via-35% to-transparent to-60%" />
         <div className="absolute inset-x-5 bottom-8">
           <motion.h1 className="font-display text-[26vw] uppercase leading-[.82]" initial={{ y: 40, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.9, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}>Το Τραμ</motion.h1>
           <motion.div className="mt-2 h-[3px] w-full origin-left bg-red" initial={{ scaleX: 0 }} animate={{ scaleX: 1 }} transition={{ duration: 0.9, delay: 0.55, ease: [0.76, 0, 0.24, 1] }} />
@@ -295,7 +300,7 @@ function PhoneHero({ prints }: { prints: Print[] }) {
         </div>
       </div>
       <div ref={cards} className="relative flex h-[100svh] flex-col bg-ink">
-        <p className="px-5 pt-20 font-display text-2xl uppercase tracking-wide text-ivory">Τέρμα. <span className="text-ivory/55">Πού πας;</span></p>
+        <p className="px-5 pt-24 font-display text-3xl uppercase tracking-wide text-ivory">Τέρμα. <span className="text-ivory/55">Πού πας;</span></p>
         <div className="relative min-h-0 flex-1"><LinePicker running={seen} prints={prints} /></div>
       </div>
     </section>
