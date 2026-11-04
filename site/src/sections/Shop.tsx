@@ -31,7 +31,6 @@ function Frame({ t, i }: { t: Tile; i: number }) {
       <div className="absolute inset-0">
         <img src={t.src.replace('.webp', '-sm.webp')} srcSet={`${t.src.replace('.webp', '-sm.webp')} 820w, ${t.src} 1600w`} sizes="(min-width: 768px) 50vw, 100vw" alt={t.alt} className={`absolute inset-0 h-full w-full object-cover ${t.pos ?? ''}`} loading="lazy" />
       </div>
-      <figcaption className="absolute bottom-3 left-3 bg-ivory px-3 py-1 font-mono text-[12px] text-ink">{t.cap}</figcaption>
     </motion.figure>
   )
 }

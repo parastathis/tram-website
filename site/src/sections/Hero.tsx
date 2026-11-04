@@ -257,8 +257,11 @@ export default function Hero() {
 
 function PhoneHero({ prints }: { prints: Print[] }) {
   const cards = useRef<HTMLDivElement>(null)
+  const film = useRef<HTMLVideoElement>(null)
   const [seen, setSeen] = useState(false)
   useEffect(() => {
+    // iOS only autoplays a video that is muted as a property, not just as an attribute
+    const v = film.current; if (v) { v.muted = true; v.play().catch(() => { /* the poster stands */ }) }
     // between the hero and the prints the page never rests half way: once the finger is up and the
     // scroll has stopped, it settles on the prints going down, or on the hero going up. Waiting for
     // the scroll to stop means the page never fights the finger.
@@ -285,8 +288,8 @@ function PhoneHero({ prints }: { prints: Print[] }) {
   return (
     <section id="hero" data-theme="dark" className="relative bg-ink text-ivory" aria-label="Παραδοσιακό Κρεοπωλείο Το Τραμ, Πειραιάς">
       <div className="relative h-[100svh] overflow-hidden">
-        <motion.img src="/media/gen/tram-front.webp" alt="Το τραμ με την πινακίδα «Το Τραμ» και το φανάρι αναμμένο" fetchPriority="high" className="absolute inset-x-0 top-0 h-[78%] w-full object-cover object-[50%_20%]" initial={{ scale: 1.08, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ duration: 1.6, ease: [0.22, 1, 0.36, 1] }} />
-        <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-ink via-ink/60 via-35% to-transparent to-60%" />
+        <motion.video ref={film} className="absolute inset-x-0 top-0 h-[64%] w-full object-cover object-[56%_50%]" poster="/media/cleaver-poster.jpg" src="/media/cleaver-720.mp4" autoPlay muted loop playsInline preload="auto" aria-label="Ο μπαλτάς κόβει τα παϊδάκια στον ξύλινο κορμό" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 1 }} />
+        <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-ink from-36% via-ink/40 via-52% to-transparent to-75%" />
         <div className="absolute inset-x-5 bottom-8">
           <motion.h1 className="font-display text-[26vw] uppercase leading-[.82]" initial={{ y: 40, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.9, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}>Το Τραμ</motion.h1>
           <motion.div className="mt-2 h-[3px] w-full origin-left bg-red" initial={{ scaleX: 0 }} animate={{ scaleX: 1 }} transition={{ duration: 0.9, delay: 0.55, ease: [0.76, 0, 0.24, 1] }} />

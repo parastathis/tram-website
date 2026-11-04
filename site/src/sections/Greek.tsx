@@ -42,7 +42,6 @@ export default function Greek() {
             <motion.img src="/media/real/label-sm.webp" srcSet="/media/real/label-sm.webp 820w, /media/real/label.webp 1800w" sizes="(min-width: 768px) 50vw, 100vw" loading="lazy"
               alt="Η ετικέτα πάνω στο μοσχάρι: Ελληνικό βόειο, νεαρό ζώο, με ονοματεπώνυμο. Χώρα γέννησης, εκτροφής και σφαγής Ελλάδα, Φάρμα Ελασσόνας"
               className="absolute inset-0 h-full w-full object-cover" style={reduced ? undefined : { scale, rotate }} />
-            <span className="absolute bottom-3 left-3 bg-ivory px-3 py-1 font-mono text-[12px]">Η πραγματική ετικέτα, πάνω στο κρέας</span>
           </div>
 
           <div ref={doc} className="flex flex-col justify-between gap-8 md:col-span-6">
