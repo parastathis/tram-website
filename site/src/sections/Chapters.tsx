@@ -129,7 +129,7 @@ export default function Chapters() {
       <div key={i} ref={(el) => { if (el) stripsRef.current[i] = el }} className="absolute inset-y-0 overflow-hidden" style={{ left: `${i * w}%`, width: `${w}%`, marginLeft: i ? '-0.5px' : 0, paddingLeft: i ? '0.5px' : 0 }}>
         <div className="absolute inset-y-0" style={{ left: `-${i * 100}%`, width: `${STRIPS * 100}%` }}>
           <div ref={(el) => { if (el) zoomRef.current[i] = el }} className="relative h-full w-full will-change-transform">
-            <img src={src} alt="" draggable={false} className="absolute inset-0 h-full w-full select-none object-cover" />
+            <img src={src} alt="" loading="lazy" draggable={false} className="absolute inset-0 h-full w-full select-none object-cover" />
           </div>
         </div>
       </div>
@@ -141,7 +141,7 @@ export default function Chapters() {
   return (
     <section id="kreata" data-theme="dark" className="bg-ink text-ivory">
       <div ref={root} className="relative h-[100svh] w-full overflow-hidden bg-ink">
-        <div className="absolute inset-0"><img src={SLIDES[current].src} alt={SLIDES[current].title} draggable={false} className="absolute inset-0 h-full w-full select-none object-cover" /></div>
+        <div className="absolute inset-0"><img src={SLIDES[current].src} alt={SLIDES[current].title} loading="lazy" draggable={false} className="absolute inset-0 h-full w-full select-none object-cover" /></div>
         {incoming !== null && <div className="absolute inset-0">{renderStrips(SLIDES[incoming].src)}</div>}
         <div aria-hidden className="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink/80 via-ink/10 to-ink/20" />
 

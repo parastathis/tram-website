@@ -70,17 +70,21 @@ export default function Hero() {
     const one = async (i: number) => {
       try { const r = await fetch(tframe(i)); const bl = await r.blob(); if (alive) { blobs.current[i] = bl; if (i < 26) want(i, () => {}) } } catch { /* the nearest frame stands in */ }
     }
+    // six at a time, each slot moving on as soon as its frame lands (the ends first, then in order)
     const run = async () => {
       await Promise.all([one(0), one(TFRAMES - 1)])
-      for (let i = 1; i < TFRAMES - 1 && alive; i += 4) await Promise.all([one(i), one(i + 1), one(i + 2), one(i + 3)])
+      let next = 1
+      const lane = async () => { while (alive && next < TFRAMES - 1) await one(next++) }
+      await Promise.all(Array.from({ length: 6 }, lane))
     }
-    // wait for the film to be playing before pulling the frames, so the film never starves
-    let t = 0
-    const start = () => { t = window.setTimeout(run, 1200) }
-    if (sessionStorage.getItem('tram-seen')) start()
-    else window.addEventListener('tram:enter', start, { once: true })
+    // start once the film can play through (or after 2.5 s at the latest), so the film never starves
+    let t = 0, started = false
+    const start = () => { if (started) return; started = true; window.clearTimeout(t); run() }
+    const v = video.current
+    v?.addEventListener('canplaythrough', start, { once: true })
+    t = window.setTimeout(start, 2500)
     const cache = frames.current
-    return () => { alive = false; window.clearTimeout(t); window.removeEventListener('tram:enter', start); cache.forEach((f) => { if ('close' in f) f.close() }); cache.clear() }
+    return () => { alive = false; window.clearTimeout(t); v?.removeEventListener('canplaythrough', start); cache.forEach((f) => { if ('close' in f) f.close() }); cache.clear() }
   }, [reduced, phone])
 
   /** decode frame i (scaled to the canvas) and keep at most 44 decoded, the rest stay compressed */
