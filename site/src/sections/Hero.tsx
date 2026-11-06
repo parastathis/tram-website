@@ -276,6 +276,15 @@ function PhoneHero({ prints }: { prints: Print[] }) {
   useEffect(() => {
     // iOS only autoplays a video that is muted as a property, not just as an attribute
     loadFilm(film.current, '/media/cleaver-720.mp4')
+    // the film plays on and on: loop as a property too, restart by hand if a browser still stops at
+    // the end, and pick up again when the hero comes back on screen or the tab comes back
+    const fv = film.current
+    const again = () => { if (fv && fv.src && fv.paused) fv.play().catch(() => {}) }
+    const ended = () => { if (fv) { fv.currentTime = 0; again() } }
+    const back = () => { if (document.visibilityState === 'visible') again() }
+    if (fv) { fv.loop = true; fv.addEventListener('ended', ended) }
+    document.addEventListener('visibilitychange', back)
+    window.addEventListener('pageshow', back)
     // between the hero and the prints the page never rests half way: once the finger is up and the
     // scroll has stopped, it settles on the prints going down, or on the hero going up. Waiting for
     // the scroll to stop means the page never fights the finger.
@@ -288,7 +297,7 @@ function PhoneHero({ prints }: { prints: Print[] }) {
       const to = dir > 0 ? c : 0
       const l = getLenis(); if (l) l.scrollTo(to, { duration: 0.6 }); else window.scrollTo({ top: to, behavior: 'smooth' })
     }
-    const onScroll = () => { const y = window.scrollY; if (y !== last) dir = y > last ? 1 : -1; last = y; clearTimeout(t); t = window.setTimeout(settle, 140) }
+    const onScroll = () => { const y = window.scrollY; if (y < window.innerHeight * 0.5) again(); if (y !== last) dir = y > last ? 1 : -1; last = y; clearTimeout(t); t = window.setTimeout(settle, 140) }
     const down = () => { touching = true; clearTimeout(t) }
     const up = () => { touching = false; clearTimeout(t); t = window.setTimeout(settle, 140) }
     window.addEventListener('scroll', onScroll, { passive: true })
@@ -297,7 +306,7 @@ function PhoneHero({ prints }: { prints: Print[] }) {
     window.addEventListener('touchcancel', up, { passive: true })
     const io = new IntersectionObserver(([e]) => { if (e.isIntersecting) setSeen(true) }, { threshold: 0.3 })
     if (cards.current) io.observe(cards.current)
-    return () => { clearTimeout(t); window.removeEventListener('scroll', onScroll); window.removeEventListener('touchstart', down); window.removeEventListener('touchend', up); window.removeEventListener('touchcancel', up); io.disconnect() }
+    return () => { fv?.removeEventListener('ended', ended); document.removeEventListener('visibilitychange', back); window.removeEventListener('pageshow', back); clearTimeout(t); window.removeEventListener('scroll', onScroll); window.removeEventListener('touchstart', down); window.removeEventListener('touchend', up); window.removeEventListener('touchcancel', up); io.disconnect() }
   }, [])
   return (
     <section id="hero" data-theme="dark" className="relative bg-ink text-ivory" aria-label="Παραδοσιακό Κρεοπωλείο Το Τραμ, Πειραιάς">
