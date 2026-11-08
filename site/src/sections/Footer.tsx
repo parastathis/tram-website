@@ -7,6 +7,7 @@
  */
 import { FacebookLogo } from '@phosphor-icons/react'
 import { SHOP, isOpenNow } from '@/lib/data'
+import { SpSignature } from './SpSignature'
 
 export default function Footer() {
   const open = isOpenNow()
@@ -46,6 +47,7 @@ export default function Footer() {
           </nav>
         </div>
         <div className="mt-16 flex flex-col-reverse items-start justify-between gap-6 border-t border-ink/15 py-8 sm:flex-row sm:items-center">
+          <SpSignature className="sm:order-last" />
           <div className="flex flex-col gap-3 text-sm text-ink-2 sm:flex-row sm:items-center sm:gap-6">
             <span>© {new Date().getFullYear()} {SHOP.full}</span>
             <span className="inline-flex items-center gap-2"><span className={`h-2 w-2 ${open ? 'bg-green' : 'bg-ink/40'}`} />{open ? 'Ανοιχτά τώρα' : 'Κλειστά τώρα'}</span>
